@@ -1,152 +1,1241 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <base target="_top">
   <meta charset="UTF-8">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1"
-  >
-
-  <title>Acceso a la elección de horario</title>
-
   <style>
+    :root {
+      --principal: #563d7c;
+      --principal-oscuro: #392752;
+      --fondo: #f4f5f7;
+      --texto: #252525;
+      --borde: #dedede;
+      --verde: #188038;
+      --rojo: #c5221f;
+      --naranja: #e37400;
+      --gris: #6b7280;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      box-sizing: border-box;
-      background: #f4f7f9;
+      background: var(--fondo);
+      color: var(--texto);
       font-family: Arial, Helvetica, sans-serif;
-      color: #243746;
     }
 
-    .contenedor {
-      width: 100%;
-      max-width: 560px;
-      padding: 32px;
-      box-sizing: border-box;
-      border: 1px solid #cbdfea;
-      border-radius: 16px;
-      background: #ffffff;
+    .cabecera {
+      background: linear-gradient(
+        135deg,
+        var(--principal),
+        var(--principal-oscuro)
+      );
+      color: white;
+      padding: 28px 20px;
       text-align: center;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
     }
 
-    h1 {
-      margin: 0 0 12px;
-      color: #174a6e;
+    .cabecera h1 {
+      margin: 0 0 6px;
       font-size: 25px;
     }
 
-    p {
-      margin: 10px 0;
-      font-size: 17px;
-      line-height: 1.55;
+    .cabecera p {
+      margin: 0;
+      opacity: 0.9;
+    }
+
+    .contenedor {
+      width: min(920px, calc(100% - 28px));
+      margin: 24px auto 50px;
+    }
+
+    .tarjeta {
+      background: white;
+      border: 1px solid var(--borde);
+      border-radius: 16px;
+      padding: 22px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
     }
 
     .cargando {
-      width: 38px;
-      height: 38px;
-      margin: 24px auto;
-      border: 4px solid #dcecf5;
-      border-top-color: #2f80c9;
-      border-radius: 50%;
-      animation: girar 0.8s linear infinite;
-    }
-
-    @keyframes girar {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    #enlaceAlternativo {
-      display: none;
-      margin-top: 22px;
-      padding: 14px 22px;
-      border-radius: 10px;
-      background: #2f80c9;
-      color: #ffffff;
-      font-weight: bold;
-      text-decoration: none;
+      text-align: center;
+      padding: 50px 20px;
+      font-size: 18px;
     }
 
     .error {
-      color: #a61b1b;
+      border-left: 6px solid var(--rojo);
+    }
+
+    .pendiente {
+      border-left: 6px solid var(--naranja);
+    }
+
+    .finalizado {
+      border-left: 6px solid var(--verde);
+    }
+
+    .datos-alumno {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .dato {
+      background: #f8f7fb;
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .dato span {
+      display: block;
+      color: var(--gris);
+      font-size: 13px;
+      margin-bottom: 5px;
+    }
+
+    .dato strong {
+      font-size: 17px;
+    }
+
+    h2 {
+      margin-top: 0;
+      color: var(--principal-oscuro);
+    }
+
+    h3 {
+      margin: 0 0 12px;
+    }
+
+    .opciones {
+      display: grid;
+      gap: 12px;
+    }
+
+    .opcion {
+      display: block;
+      border: 2px solid var(--borde);
+      border-radius: 13px;
+      padding: 15px;
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+
+    .opcion:hover {
+      border-color: var(--principal);
+      transform: translateY(-1px);
+    }
+
+    .opcion:has(input:checked) {
+      border-color: var(--principal);
+      background: #f3eef9;
+    }
+
+    .opcion.completa {
+      opacity: 0.55;
+      cursor: not-allowed;
+      background: #f3f3f3;
+    }
+
+    .opcion input {
+      margin-right: 10px;
+    }
+
+    .titulo-opcion {
       font-weight: bold;
+    }
+
+    .detalle-opcion {
+      margin: 7px 0 0 27px;
+      color: #555;
+      font-size: 14px;
+    }
+
+    .plazas {
+      display: inline-block;
+      margin-top: 8px;
+      margin-left: 27px;
+      padding: 4px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      background: #e6f4ea;
+      color: var(--verde);
+    }
+
+    .plazas.completo {
+      background: #fce8e6;
+      color: var(--rojo);
+    }
+
+    .hermano {
+      padding: 12px 0;
+      border-top: 1px solid var(--borde);
+    }
+
+    .hermano:first-child {
+      border-top: 0;
+    }
+
+    .boton {
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      padding: 15px;
+      background: var(--principal);
+      color: white;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .boton:hover:not(:disabled) {
+      background: var(--principal-oscuro);
+    }
+
+    .boton:disabled {
+      opacity: 0.65;
+      cursor: wait;
+    }
+
+    .boton-secundario {
+      width: 100%;
+      border: 2px solid var(--principal);
+      border-radius: 12px;
+      padding: 13px;
+      background: white;
+      color: var(--principal);
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .boton-secundario:hover {
+      background: #f3eef9;
+    }
+
+    .acciones {
+      display: grid;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .fila-resumen {
+      margin-top: 14px;
+      padding: 16px;
+      border: 1px solid var(--borde);
+      border-radius: 12px;
+      background: #f8f7fb;
+    }
+
+    .fila-resumen .horario {
+      margin-top: 7px;
+    }
+
+    .fila-resumen .detalle {
+      margin-top: 4px;
+      color: #555;
+    }
+
+    .aviso-error {
+      margin-top: 16px;
+      padding: 14px;
+      border-left: 5px solid var(--rojo);
+      background: #fce8e6;
+      border-radius: 8px;
+      white-space: pre-line;
+    }
+
+    .aviso-hermano {
+      margin-top: 18px;
+      padding: 15px;
+      border-radius: 10px;
+      background: #fff4e5;
+      color: #7a4300;
+    }
+
+    @media (max-width: 650px) {
+      .datos-alumno {
+        grid-template-columns: 1fr;
+      }
+
+      .cabecera h1 {
+        font-size: 21px;
+      }
+
+      .tarjeta {
+        padding: 18px;
+      }
     }
   </style>
 </head>
 
 <body>
-  <main class="contenedor">
+  <header class="cabecera">
     <h1>C.E.M. Luis de Narváez</h1>
+    <p>Elección de horario 2026-2027</p>
+  </header>
 
-    <p id="mensaje">
-      Accediendo a la elección de horario…
-    </p>
-
-    <div
-      id="cargando"
-      class="cargando"
-      aria-label="Cargando"
-    ></div>
-
-    <a id="enlaceAlternativo">
-      Continuar
-    </a>
+  <main class="contenedor">
+    <div id="contenido" class="tarjeta cargando">
+      Cargando información…
+    </div>
   </main>
 
   <script>
-    (function () {
-      const URL_APLICACION =
-        'https://script.google.com/macros/s/AKfycbxED3qNMwHOQj6BfGOhG_OonNGF_T9Jz0RljBuQxDn7XWp2OpJhZcRz8VBS-bgBaE4F/exec';
+    const PARAMETROS_URL =
+      new URLSearchParams(window.location.search);
 
-      const parametros =
-        new URLSearchParams(window.location.search);
+    const TOKEN = String(
+      PARAMETROS_URL.get('token') || ''
+    ).trim();
 
-      const token =
-        String(parametros.get('token') || '').trim();
+    const URL_API =
+      'https://script.google.com/macros/s/AKfycbxED3qNMwHOQj6BfGOhG_OonNGF_T9Jz0RljBuQxDn7XWp2OpJhZcRz8VBS-bgBaE4F/exec';
 
-      const mensaje =
-        document.getElementById('mensaje');
+    let contadorJsonp = 0;
 
-      const cargando =
-        document.getElementById('cargando');
+    let datosActuales = null;
+    let seleccionPendiente = null;
 
-      const enlaceAlternativo =
-        document.getElementById('enlaceAlternativo');
+    document.addEventListener(
+      'DOMContentLoaded',
+      cargarDatos
+    );
 
-      if (!token) {
-        cargando.style.display = 'none';
-        mensaje.className = 'error';
-        mensaje.textContent =
-          'El enlace no contiene un código de acceso válido.';
+
+    /**
+     * Llama a Apps Script sin abandonar GitHub Pages.
+     *
+     * Se utiliza JSONP para evitar las restricciones CORS y,
+     * sobre todo, para que el navegador nunca navegue a
+     * script.google.com.
+     */
+    function llamarApi(
+      accion,
+      argumentos,
+      alCompletar,
+      alFallar
+    ) {
+      contadorJsonp += 1;
+
+      const nombreCallback =
+        '__respuestaHorarios_' +
+        Date.now() + '_' +
+        contadorJsonp;
+
+      const script =
+        document.createElement('script');
+
+      let finalizado = false;
+
+      const limpiar = function() {
+        if (script.parentNode) {
+          script.parentNode.removeChild(script);
+        }
+
+        try {
+          delete window[nombreCallback];
+        } catch (error) {
+          window[nombreCallback] = undefined;
+        }
+      };
+
+      const temporizador = window.setTimeout(
+        function() {
+          if (finalizado) {
+            return;
+          }
+
+          finalizado = true;
+          limpiar();
+
+          alFallar(
+            new Error(
+              'El servidor ha tardado demasiado en responder.'
+            )
+          );
+        },
+        30000
+      );
+
+      window[nombreCallback] = function(respuesta) {
+        if (finalizado) {
+          return;
+        }
+
+        finalizado = true;
+        window.clearTimeout(temporizador);
+        limpiar();
+        alCompletar(respuesta);
+      };
+
+      const parametros = new URLSearchParams({
+        api: '1',
+        accion: accion,
+        callback: nombreCallback,
+        token: String(
+          argumentos?.token || TOKEN || ''
+        )
+      });
+
+      if (argumentos?.seleccion) {
+        parametros.set(
+          'seleccion',
+          JSON.stringify(argumentos.seleccion)
+        );
+      }
+
+      script.async = true;
+      script.src =
+        URL_API + '?' + parametros.toString();
+
+      script.onerror = function() {
+        if (finalizado) {
+          return;
+        }
+
+        finalizado = true;
+        window.clearTimeout(temporizador);
+        limpiar();
+
+        alFallar(
+          new Error(
+            'No se ha podido conectar con el servidor.'
+          )
+        );
+      };
+
+      document.head.appendChild(script);
+    }
+
+
+    function cargarDatos() {
+      const contenedor =
+        document.getElementById('contenido');
+
+      contenedor.className = 'tarjeta cargando';
+      contenedor.innerHTML = 'Cargando información…';
+
+      llamarApi(
+        'obtenerDatosAlumno',
+        { token: TOKEN },
+        mostrarAplicacion,
+        mostrarErrorServidor
+      );
+    }
+
+
+    function mostrarAplicacion(respuesta) {
+      const contenedor =
+        document.getElementById('contenido');
+
+      datosActuales = respuesta;
+      seleccionPendiente = null;
+
+      if (!respuesta || !respuesta.ok) {
+        contenedor.className = 'tarjeta error';
+
+        contenedor.innerHTML = `
+          <h2>Acceso no disponible</h2>
+
+          <p>
+            ${escapar(
+              respuesta?.mensaje ||
+              'Ha ocurrido un error.'
+            )}
+          </p>
+        `;
+
         return;
       }
 
-      const destino =
-        URL_APLICACION +
-        '?token=' +
-        encodeURIComponent(token);
+      if (respuesta.estado === 'PENDIENTE') {
+        contenedor.className = 'tarjeta pendiente';
 
-      enlaceAlternativo.href = destino;
+        contenedor.innerHTML = `
+          ${cabeceraAlumno(respuesta.alumno)}
 
-      window.setTimeout(function () {
-        window.location.replace(destino);
-      }, 350);
+          <h2 style="margin-top:22px;">
+            Su turno todavía no está activo
+          </h2>
 
-      window.setTimeout(function () {
-        mensaje.textContent =
-          'Pulse Continuar para acceder a la elección.';
-        cargando.style.display = 'none';
-        enlaceAlternativo.style.display = 'inline-block';
-      }, 3000);
-    })();
+          <p>${escapar(respuesta.mensaje)}</p>
+
+          <p>
+            Posición dentro de
+            <strong>
+              ${escapar(respuesta.alumno.instrumento)}
+            </strong>:
+            ${respuesta.alumno.ordenInstrumento}
+          </p>
+
+          <p>
+            Posición dentro de
+            <strong>
+              ${escapar(respuesta.alumno.instrumento)}
+              de ${respuesta.alumno.curso}.º
+            </strong>:
+            ${respuesta.alumno.ordenInstrumentoCurso}
+          </p>
+        `;
+
+        return;
+      }
+
+      if (respuesta.estado === 'FINALIZADO') {
+        contenedor.className = 'tarjeta finalizado';
+
+        contenedor.innerHTML = `
+          ${cabeceraAlumno(respuesta.alumno)}
+
+          <h2 style="margin-top:22px;">
+            Horario confirmado
+          </h2>
+
+          <p>${escapar(respuesta.mensaje)}</p>
+        `;
+
+        return;
+      }
+
+      contenedor.className = '';
+
+      contenedor.innerHTML = `
+        <section class="tarjeta">
+          ${cabeceraAlumno(respuesta.alumno)}
+        </section>
+
+        ${crearBloqueHermanos(respuesta.hermanos)}
+
+        <section class="tarjeta">
+          <h2>Instrumento</h2>
+
+          <p>
+            Seleccione uno de los horarios disponibles.
+          </p>
+
+          ${crearOpciones(
+            'instrumento',
+            respuesta.instrumento,
+            true
+          )}
+        </section>
+
+        <section class="tarjeta">
+          <h2>Lenguaje Musical</h2>
+
+          <p>
+            La elección incluye automáticamente los dos días
+            indicados.
+          </p>
+
+          ${crearOpciones(
+            'lenguaje',
+            respuesta.lenguaje,
+            true
+          )}
+        </section>
+
+        ${
+          respuesta.alumno.curso >= 3
+            ? `
+              <section class="tarjeta">
+                <h2>Agrupaciones Musicales</h2>
+
+                <p>
+                  Seleccione una hora semanal.
+                </p>
+
+                ${crearOpciones(
+                  'agrupacion',
+                  respuesta.agrupaciones,
+                  false
+                )}
+              </section>
+
+              <section class="tarjeta">
+                <h2>Coro</h2>
+
+                <p>
+                  Seleccione una hora semanal.
+                </p>
+
+                ${crearOpciones(
+                  'coro',
+                  respuesta.coro,
+                  false
+                )}
+              </section>
+            `
+            : ''
+        }
+
+        <section class="tarjeta">
+          <div
+            id="mensaje-validacion"
+            style="display:none;"
+          ></div>
+
+          <button
+            id="boton-continuar"
+            class="boton"
+            type="button"
+            onclick="probarSeleccion()"
+          >
+            Continuar
+          </button>
+        </section>
+      `;
+    }
+
+
+    function cabeceraAlumno(alumno) {
+      return `
+        <h2>${escapar(alumno.nombre)}</h2>
+
+        <div class="datos-alumno">
+          <div class="dato">
+            <span>Instrumento</span>
+
+            <strong>
+              ${escapar(alumno.instrumento)}
+            </strong>
+          </div>
+
+          <div class="dato">
+            <span>Curso</span>
+
+            <strong>${alumno.curso}.º</strong>
+          </div>
+
+          <div class="dato">
+            <span>Posición en el instrumento</span>
+
+            <strong>
+              ${alumno.ordenInstrumento}
+            </strong>
+          </div>
+        </div>
+      `;
+    }
+
+
+    function crearBloqueHermanos(hermanos) {
+      if (!hermanos || hermanos.length === 0) {
+        return '';
+      }
+
+      const filas = hermanos.map(hermano => `
+        <div class="hermano">
+          <strong>
+            ${escapar(hermano.nombre)}
+          </strong>
+
+          <br>
+
+          ${escapar(hermano.instrumento)}
+          · ${hermano.curso}.º
+          · Estado: ${escapar(hermano.estado)}
+        </div>
+      `).join('');
+
+      return `
+        <section class="tarjeta">
+          <h2>Otros alumnos de la familia</h2>
+
+          <p>
+            La familia no finalizará su turno hasta completar
+            la elección de todos los hermanos.
+          </p>
+
+          ${filas}
+        </section>
+      `;
+    }
+
+
+    function crearOpciones(
+      nombre,
+      opciones,
+      mostrarPlazas
+    ) {
+      if (!opciones || opciones.length === 0) {
+        return `
+          <p>
+            No existen horarios disponibles para este curso.
+          </p>
+        `;
+      }
+
+      return `
+        <div class="opciones">
+          ${opciones.map(opcion => {
+            const claseCompleta =
+              opcion.completo ? ' completa' : '';
+
+            const deshabilitado =
+              opcion.completo ? 'disabled' : '';
+
+            return `
+              <label class="opcion${claseCompleta}">
+                <input
+                  type="radio"
+                  name="${escapar(nombre)}"
+                  value="${escapar(opcion.id)}"
+                  ${deshabilitado}
+                >
+
+                <span class="titulo-opcion">
+                  ${escapar(opcion.grupo)}
+                </span>
+
+                <div class="detalle-opcion">
+                  ${escapar(opcion.dias)}
+                  ·
+                  ${escapar(opcion.inicio)}–${escapar(opcion.fin)}
+                </div>
+
+                ${
+                  mostrarPlazas
+                    ? `
+                      <span
+                        class="plazas ${
+                          opcion.completo
+                            ? 'completo'
+                            : ''
+                        }"
+                      >
+                        ${
+                          opcion.completo
+                            ? 'Completo'
+                            : opcion.libres +
+                              (
+                                opcion.libres === 1
+                                  ? ' plaza disponible'
+                                  : ' plazas disponibles'
+                              )
+                        }
+                      </span>
+                    `
+                    : ''
+                }
+              </label>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+
+    function probarSeleccion() {
+      ocultarMensajeValidacion();
+
+      const instrumento =
+        obtenerSeleccionado('instrumento');
+
+      const lenguaje =
+        obtenerSeleccionado('lenguaje');
+
+      const agrupacion =
+        obtenerSeleccionado('agrupacion');
+
+      const coro =
+        obtenerSeleccionado('coro');
+
+      if (!instrumento || !lenguaje) {
+        mostrarMensajeValidacion(
+          'Debe seleccionar un horario de Instrumento y otro ' +
+          'de Lenguaje Musical.'
+        );
+
+        return;
+      }
+
+      const necesitaColectivas =
+        document.querySelector(
+          'input[name="agrupacion"]'
+        ) !== null;
+
+      if (
+        necesitaColectivas &&
+        (!agrupacion || !coro)
+      ) {
+        mostrarMensajeValidacion(
+          'Debe seleccionar también Agrupaciones Musicales ' +
+          'y Coro.'
+        );
+
+        return;
+      }
+
+      seleccionPendiente = {
+        instrumento: instrumento,
+        lenguaje: lenguaje,
+        agrupacion: agrupacion,
+        coro: coro
+      };
+
+      const boton =
+        document.getElementById(
+          'boton-continuar'
+        );
+
+      boton.disabled = true;
+      boton.textContent =
+        'Comprobando horarios…';
+
+      llamarApi(
+        'comprobarSeleccionHorario',
+        {
+          token: TOKEN,
+          seleccion: seleccionPendiente
+        },
+        mostrarResultadoComprobacion,
+        function(error) {
+          boton.disabled = false;
+          boton.textContent = 'Continuar';
+
+          mostrarMensajeValidacion(
+            'Ha ocurrido un error al comprobar los horarios: ' +
+            (
+              error?.message ||
+              String(error)
+            )
+          );
+        }
+      );
+    }
+
+
+    function mostrarResultadoComprobacion(
+      respuesta
+    ) {
+      const boton =
+        document.getElementById(
+          'boton-continuar'
+        );
+
+      if (boton) {
+        boton.disabled = false;
+        boton.textContent = 'Continuar';
+      }
+
+      if (!respuesta || !respuesta.ok) {
+        let mensaje =
+          respuesta?.mensaje ||
+          'No se ha podido continuar.';
+
+        if (
+          respuesta &&
+          respuesta.conflictos &&
+          respuesta.conflictos.length > 0
+        ) {
+          mensaje +=
+            '\n\n' +
+            respuesta.conflictos.join('\n');
+        }
+
+        mostrarMensajeValidacion(mensaje);
+
+        return;
+      }
+
+      mostrarResumen(respuesta);
+    }
+
+
+    function mostrarResumen(respuesta) {
+      const resumen = respuesta.resumen;
+
+      const contenedor =
+        document.getElementById('contenido');
+
+      let html = `
+        <section class="tarjeta">
+          <h2>Revise su elección</h2>
+
+          <p>
+            Compruebe cuidadosamente los horarios antes de
+            confirmar. Una vez confirmados, la elección será
+            definitiva.
+          </p>
+
+          ${crearFilaResumen(
+            'Instrumento',
+            resumen.instrumento
+          )}
+
+          ${crearFilaResumen(
+            'Lenguaje Musical',
+            resumen.lenguaje
+          )}
+      `;
+
+      if (resumen.agrupacion) {
+        html += crearFilaResumen(
+          'Agrupaciones Musicales',
+          resumen.agrupacion
+        );
+      }
+
+      if (resumen.coro) {
+        html += crearFilaResumen(
+          'Coro',
+          resumen.coro
+        );
+      }
+
+      html += `
+          <div class="acciones">
+            <button
+              id="boton-confirmar"
+              class="boton"
+              type="button"
+              onclick="confirmarDefinitivamente()"
+            >
+              Confirmar horario definitivamente
+            </button>
+
+            <button
+              class="boton-secundario"
+              type="button"
+              onclick="cargarDatos()"
+            >
+              Volver y modificar
+            </button>
+          </div>
+        </section>
+      `;
+
+      contenedor.className = '';
+      contenedor.innerHTML = html;
+
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+
+
+    function crearFilaResumen(
+      nombreAsignatura,
+      opcion
+    ) {
+      return `
+        <div class="fila-resumen">
+          <strong>
+            ${escapar(nombreAsignatura)}
+          </strong>
+
+          <div class="horario">
+            ${escapar(opcion.grupo)}
+          </div>
+
+          <div class="detalle">
+            ${escapar(opcion.dias)}
+            ·
+            ${escapar(opcion.inicio)}–${escapar(opcion.fin)}
+          </div>
+        </div>
+      `;
+    }
+
+
+    function confirmarDefinitivamente() {
+      if (!seleccionPendiente) {
+        alert(
+          'No se ha encontrado la selección pendiente de confirmar.'
+        );
+
+        return;
+      }
+
+      const boton =
+        document.getElementById(
+          'boton-confirmar'
+        );
+
+      if (boton) {
+        boton.disabled = true;
+        boton.textContent =
+          'Confirmando y reservando plazas…';
+      }
+
+      llamarApi(
+        'confirmarHorarioDefinitivo',
+        {
+          token: TOKEN,
+          seleccion: seleccionPendiente
+        },
+        mostrarConfirmacionDefinitiva,
+        function(error) {
+          if (boton) {
+            boton.disabled = false;
+            boton.textContent =
+              'Confirmar horario definitivamente';
+          }
+
+          alert(
+            'No se ha podido confirmar el horario: ' +
+            (
+              error?.message ||
+              String(error)
+            )
+          );
+        }
+      );
+    }
+
+
+function mostrarConfirmacionDefinitiva(
+  respuesta
+) {
+  const boton =
+    document.getElementById(
+      'boton-confirmar'
+    );
+
+  if (!respuesta || !respuesta.ok) {
+    if (boton) {
+      boton.disabled = false;
+      boton.textContent =
+        'Confirmar horario definitivamente';
+    }
+
+    alert(
+      respuesta?.mensaje ||
+      'No se ha podido confirmar el horario.'
+    );
+
+    return;
+  }
+
+  seleccionPendiente = null;
+
+  /*
+   * Si queda otro hermano pendiente, el servidor devuelve
+   * su URL personal. Abrimos directamente su elección.
+   */
+  if (
+    respuesta.siguienteHermano &&
+    respuesta.siguienteHermano.url
+  ) {
+    const contenedor =
+      document.getElementById('contenido');
+
+    contenedor.className = 'tarjeta cargando';
+
+    contenedor.innerHTML = `
+      <h2>Horario confirmado correctamente</h2>
+
+      <p>
+        Abriendo ahora la elección de horario de
+        <strong>
+          ${escapar(
+            respuesta.siguienteHermano.nombre
+          )}
+        </strong>…
+      </p>
+
+      <p>
+        Si no se abre automáticamente, pulse el botón.
+      </p>
+
+      <button
+        id="boton-siguiente-hermano"
+        class="boton"
+        type="button"
+      >
+        Continuar con el siguiente hermano/a
+      </button>
+    `;
+
+    const botonSiguiente =
+      document.getElementById(
+        'boton-siguiente-hermano'
+      );
+
+    botonSiguiente.addEventListener(
+      'click',
+      function() {
+        abrirSiguienteHermano(
+          respuesta.siguienteHermano.url
+        );
+      }
+    );
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+
+    setTimeout(function() {
+      abrirSiguienteHermano(
+        respuesta.siguienteHermano.url
+      );
+    }, 700);
+
+    return;
+  }
+
+  /*
+   * Esta pantalla solo se muestra cuando toda la familia
+   * ha terminado sus elecciones.
+   */
+  const resumen = respuesta.resumen;
+
+  let html = `
+    <section class="tarjeta finalizado">
+      <h2>
+        Horarios familiares confirmados correctamente
+      </h2>
+
+      <p>
+        ${escapar(respuesta.mensaje)}
+      </p>
+
+      ${crearFilaResumen(
+        'Instrumento',
+        resumen.instrumento
+      )}
+
+      ${crearFilaResumen(
+        'Lenguaje Musical',
+        resumen.lenguaje
+      )}
+  `;
+
+  if (resumen.agrupacion) {
+    html += crearFilaResumen(
+      'Agrupaciones Musicales',
+      resumen.agrupacion
+    );
+  }
+
+  if (resumen.coro) {
+    html += crearFilaResumen(
+      'Coro',
+      resumen.coro
+    );
+  }
+
+  html += `
+      <p style="margin-top:20px;">
+        La familia ha completado todas sus elecciones.
+        Se ha enviado por correo electrónico el resumen
+        definitivo de los horarios.
+      </p>
+    </section>
+  `;
+
+  const contenedor =
+    document.getElementById('contenido');
+
+  contenedor.className = '';
+  contenedor.innerHTML = html;
+
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+}
+
+function abrirSiguienteHermano(url) {
+  if (!url) {
+    alert(
+      'No se ha encontrado el enlace del siguiente alumno.'
+    );
+
+    return;
+  }
+
+  window.top.location.href = url;
+}
+
+
+    function obtenerSeleccionado(nombre) {
+      return document.querySelector(
+        `input[name="${nombre}"]:checked`
+      )?.value || '';
+    }
+
+
+    function mostrarMensajeValidacion(
+      mensaje
+    ) {
+      const caja =
+        document.getElementById(
+          'mensaje-validacion'
+        );
+
+      if (!caja) {
+        alert(mensaje);
+        return;
+      }
+
+      caja.className = 'aviso-error';
+      caja.style.display = 'block';
+      caja.textContent = mensaje;
+
+      caja.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }
+
+
+    function ocultarMensajeValidacion() {
+      const caja =
+        document.getElementById(
+          'mensaje-validacion'
+        );
+
+      if (!caja) {
+        return;
+      }
+
+      caja.style.display = 'none';
+      caja.textContent = '';
+    }
+
+
+    function mostrarErrorServidor(error) {
+      const contenedor =
+        document.getElementById('contenido');
+
+      contenedor.className =
+        'tarjeta error';
+
+      contenedor.innerHTML = `
+        <h2>Error de la aplicación</h2>
+
+        <p>
+          ${escapar(
+            error?.message ||
+            String(error)
+          )}
+        </p>
+      `;
+    }
+
+
+    function escapar(valor) {
+      return String(valor ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
   </script>
 </body>
 </html>
+
