@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -280,8 +282,8 @@
 
 <body>
   <header class="cabecera">
-    <h1>C.E.M. Luis de Narváez</h1>
-    <p>Elección de horario 2026-2027</p>
+    <h1 id="nombre-centro">C.E.M. Luis de Narváez</h1>
+    <p id="titulo-curso">Elección de horario 2026-2027</p>
   </header>
 
   <main class="contenedor">
@@ -411,6 +413,10 @@
     function mostrarAplicacion(respuesta) {
       const contenedor =
         document.getElementById('contenido');
+
+      aplicarConfiguracionInterfaz(
+        respuesta?.configuracion
+      );
 
       datosActuales = respuesta;
       seleccionPendiente = null;
@@ -1199,6 +1205,59 @@ function abrirSiguienteHermano(url) {
           )}
         </p>
       `;
+    }
+
+
+    /**
+     * Actualiza la cabecera con los valores recibidos desde Código.gs.
+     *
+     * Gracias a esto, al cambiar CONFIG_APP y publicar una nueva
+     * versión de Apps Script no será necesario editar GitHub.
+     */
+    function aplicarConfiguracionInterfaz(configuracion) {
+      if (!configuracion) {
+        return;
+      }
+
+      const nombreCentro =
+        String(configuracion.nombreCentro || '').trim();
+
+      const cursoLargo =
+        String(configuracion.cursoLargo || '').trim();
+
+      const tituloAplicacion =
+        String(
+          configuracion.tituloAplicacion ||
+          'Elección de horario'
+        ).trim();
+
+      const elementoCentro =
+        document.getElementById('nombre-centro');
+
+      const elementoCurso =
+        document.getElementById('titulo-curso');
+
+      if (elementoCentro && nombreCentro) {
+        elementoCentro.textContent = nombreCentro;
+      }
+
+      if (elementoCurso) {
+        elementoCurso.textContent =
+          tituloAplicacion +
+          (
+            cursoLargo
+              ? ' ' + cursoLargo
+              : ''
+          );
+      }
+
+      document.title =
+        tituloAplicacion +
+        (
+          cursoLargo
+            ? ' ' + cursoLargo
+            : ''
+        );
     }
 
 
