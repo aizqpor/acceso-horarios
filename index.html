@@ -298,10 +298,8 @@
       PARAMETROS_URL.get('token') || ''
     ).trim();
 
-    const URL_API =
-      'https://script.google.com/macros/s/AKfycbxED3qNMwHOQj6BfGOhG_OonNGF_T9Jz0RljBuQxDn7XWp2OpJhZcRz8VBS-bgBaE4F/exec';
-
-    let contadorJsonp = 0;
+    const URL_WORKER =
+      'https://acceso-horarios.aizqpor.workers.dev/';
 
     let datosActuales = null;
     let seleccionPendiente = null;
@@ -313,11 +311,10 @@
 
 
     /**
-     * Llama a Apps Script sin abandonar GitHub Pages.
+     * Llama al intermediario de Cloudflare.
      *
-     * Se utiliza JSONP para evitar las restricciones CORS y,
-     * sobre todo, para que el navegador nunca navegue a
-     * script.google.com.
+     * El navegador ya no contacta directamente con Apps Script,
+     * evitando bloqueos por extensiones, perfiles o cuentas de Google.
      */
     function llamarApi(
       accion,
@@ -325,98 +322,75 @@
       alCompletar,
       alFallar
     ) {
-      contadorJsonp += 1;
-
-      const nombreCallback =
-        '__respuestaHorarios_' +
-        Date.now() + '_' +
-        contadorJsonp;
-
-      const script =
-        document.createElement('script');
-
-      let finalizado = false;
-
-      const limpiar = function() {
-        if (script.parentNode) {
-          script.parentNode.removeChild(script);
-        }
-
-        try {
-          delete window[nombreCallback];
-        } catch (error) {
-          window[nombreCallback] = undefined;
-        }
-      };
+      const controlador =
+        new AbortController();
 
       const temporizador = window.setTimeout(
         function() {
-          if (finalizado) {
-            return;
-          }
-
-          finalizado = true;
-          limpiar();
-
-          alFallar(
-            new Error(
-              'El servidor ha tardado demasiado en responder.'
-            )
-          );
+          controlador.abort();
         },
         30000
       );
 
-      window[nombreCallback] = function(respuesta) {
-        if (finalizado) {
-          return;
-        }
-
-        finalizado = true;
-        window.clearTimeout(temporizador);
-        limpiar();
-        alCompletar(respuesta);
-      };
-
-      const parametros = new URLSearchParams({
-        api: '1',
+      const cuerpo = {
         accion: accion,
-        callback: nombreCallback,
         token: String(
           argumentos?.token || TOKEN || ''
         )
-      });
-
-      if (argumentos?.seleccion) {
-        parametros.set(
-          'seleccion',
-          JSON.stringify(argumentos.seleccion)
-        );
-      }
-
-      script.async = true;
-      script.src =
-        URL_API + '?' + parametros.toString();
-
-      script.onerror = function() {
-        if (finalizado) {
-          return;
-        }
-
-        finalizado = true;
-        window.clearTimeout(temporizador);
-        limpiar();
-
-        alFallar(
-          new Error(
-            'No se ha podido conectar con el servidor.'
-          )
-        );
       };
 
-      document.head.appendChild(script);
-    }
+      if (argumentos?.seleccion) {
+        cuerpo.seleccion =
+          argumentos.seleccion;
+      }
 
+      fetch(URL_WORKER, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(cuerpo),
+        signal: controlador.signal,
+        cache: 'no-store'
+      })
+        .then(function(respuesta) {
+          return respuesta
+            .json()
+            .then(function(datos) {
+              if (!respuesta.ok) {
+                throw new Error(
+                  datos?.mensaje ||
+                  'El servidor ha rechazado la petición.'
+                );
+              }
+
+              return datos;
+            });
+        })
+        .then(function(datos) {
+          window.clearTimeout(temporizador);
+          alCompletar(datos);
+        })
+        .catch(function(error) {
+          window.clearTimeout(temporizador);
+
+          if (error?.name === 'AbortError') {
+            alFallar(
+              new Error(
+                'El servidor ha tardado demasiado en responder.'
+              )
+            );
+            return;
+          }
+
+          alFallar(
+            new Error(
+              error?.message ||
+              'No se ha podido conectar con el servidor.'
+            )
+          );
+        });
+    }
 
     function cargarDatos() {
       const contenedor =
