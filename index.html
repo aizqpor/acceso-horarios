@@ -508,20 +508,41 @@
           )}
         </section>
 
-        <section class="tarjeta">
-          <h2>Lenguaje Musical</h2>
+        ${
+          respuesta.lenguajeAutomatico
+            ? `
+              <section class="tarjeta">
+                <h2>Lenguaje Musical</h2>
 
-          <p>
-            La elección incluye automáticamente los dos días
-            indicados.
-          </p>
+                <p>
+                  En 1.º y 2.º, el grupo de Lenguaje Musical
+                  queda vinculado automáticamente al grupo de
+                  Instrumento elegido.
+                </p>
 
-          ${crearOpciones(
-            'lenguaje',
-            respuesta.lenguaje,
-            true
-          )}
-        </section>
+                <p>
+                  El horario asociado aparece debajo de cada
+                  opción de Instrumento.
+                </p>
+              </section>
+            `
+            : `
+              <section class="tarjeta">
+                <h2>Lenguaje Musical</h2>
+
+                <p>
+                  La elección incluye automáticamente los dos
+                  días indicados.
+                </p>
+
+                ${crearOpciones(
+                  'lenguaje',
+                  respuesta.lenguaje,
+                  true
+                )}
+              </section>
+            `
+        }
 
         ${
           respuesta.alumno.curso >= 3
@@ -683,6 +704,30 @@
                 </div>
 
                 ${
+                  opcion.lenguajeAsociado
+                    ? `
+                      <div
+                        class="detalle-opcion"
+                        style="
+                          margin-top:10px;
+                          padding:10px;
+                          border-radius:9px;
+                          background:#eef6fb;
+                          color:#174a6e;
+                        "
+                      >
+                        <strong>Lenguaje Musical asociado:</strong>
+                        ${escapar(opcion.lenguajeAsociado.grupo)}
+                        ·
+                        ${escapar(opcion.lenguajeAsociado.dias)}
+                        ·
+                        ${escapar(opcion.lenguajeAsociado.inicio)}–${escapar(opcion.lenguajeAsociado.fin)}
+                      </div>
+                    `
+                    : ''
+                }
+
+                ${
                   mostrarPlazas
                     ? `
                       <span
@@ -729,10 +774,20 @@
       const coro =
         obtenerSeleccionado('coro');
 
-      if (!instrumento || !lenguaje) {
+      const lenguajeAutomatico =
+        Boolean(datosActuales?.lenguajeAutomatico);
+
+      if (!instrumento) {
         mostrarMensajeValidacion(
-          'Debe seleccionar un horario de Instrumento y otro ' +
-          'de Lenguaje Musical.'
+          'Debe seleccionar un horario de Instrumento.'
+        );
+
+        return;
+      }
+
+      if (!lenguajeAutomatico && !lenguaje) {
+        mostrarMensajeValidacion(
+          'Debe seleccionar también un horario de Lenguaje Musical.'
         );
 
         return;
