@@ -472,6 +472,33 @@
       if (respuesta.estado === 'FINALIZADO') {
         contenedor.className = 'tarjeta finalizado';
 
+        const bloqueSiguienteHermano =
+          respuesta.siguienteHermano &&
+          respuesta.siguienteHermano.url
+            ? `
+              <div class="aviso-hermano">
+                <strong>
+                  Todavía queda otro alumno de la familia.
+                </strong>
+
+                <p>
+                  Puede continuar ahora con la elección de
+                  ${escapar(
+                    respuesta.siguienteHermano.nombre
+                  )}.
+                </p>
+
+                <button
+                  id="boton-recuperar-hermano"
+                  class="boton"
+                  type="button"
+                >
+                  Continuar con el siguiente hermano/a
+                </button>
+              </div>
+            `
+            : '';
+
         contenedor.innerHTML = `
           ${cabeceraAlumno(respuesta.alumno)}
 
@@ -480,7 +507,25 @@
           </h2>
 
           <p>${escapar(respuesta.mensaje)}</p>
+
+          ${bloqueSiguienteHermano}
         `;
+
+        if (
+          respuesta.siguienteHermano &&
+          respuesta.siguienteHermano.url
+        ) {
+          document
+            .getElementById('boton-recuperar-hermano')
+            .addEventListener(
+              'click',
+              function() {
+                abrirSiguienteHermano(
+                  respuesta.siguienteHermano.url
+                );
+              }
+            );
+        }
 
         return;
       }
