@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -392,18 +393,130 @@
         });
     }
 
+    const MAX_INTENTOS_CARGA = 4;
+
+    const RETRASOS_CARGA = [
+      0,
+      900,
+      2000,
+      4000
+    ];
+
+    let intentoCargaActual = 0;
+
+
     function cargarDatos() {
+      intentoCargaActual = 0;
+      intentarCargarDatos();
+    }
+
+
+    function intentarCargarDatos() {
       const contenedor =
         document.getElementById('contenido');
 
+      const numeroIntento =
+        intentoCargaActual + 1;
+
       contenedor.className = 'tarjeta cargando';
-      contenedor.innerHTML = 'Cargando información…';
+
+      contenedor.innerHTML =
+        numeroIntento === 1
+          ? 'Cargando información…'
+          : (
+              'Comprobando acceso…<br>' +
+              '<span style="font-size:14px;opacity:.72;">' +
+              'Intento ' +
+              numeroIntento +
+              ' de ' +
+              MAX_INTENTOS_CARGA +
+              '</span>'
+            );
 
       llamarApi(
         'obtenerDatosAlumno',
         { token: TOKEN },
-        mostrarAplicacion,
-        mostrarErrorServidor
+
+        function(respuesta) {
+          /*
+           * Un token recién creado puede tardar algún instante en
+           * estar disponible a través de toda la cadena
+           * GitHub → Cloudflare → Apps Script → Google Sheets.
+           *
+           * Antes de mostrar "Acceso no disponible" hacemos varios
+           * reintentos automáticos. Así evitamos falsos negativos
+           * cuando la familia abre el correo inmediatamente.
+           */
+          if (
+            respuesta &&
+            respuesta.ok === false &&
+            debeReintentarRespuesta_(respuesta) &&
+            intentoCargaActual < MAX_INTENTOS_CARGA - 1
+          ) {
+            programarNuevoIntento_();
+            return;
+          }
+
+          mostrarAplicacion(respuesta);
+        },
+
+        function(error) {
+          /*
+           * También reintentamos automáticamente errores de red,
+           * timeout o fallos transitorios del servidor.
+           */
+          if (
+            intentoCargaActual < MAX_INTENTOS_CARGA - 1
+          ) {
+            programarNuevoIntento_();
+            return;
+          }
+
+          mostrarErrorServidor(error);
+        }
+      );
+    }
+
+
+    function programarNuevoIntento_() {
+      intentoCargaActual++;
+
+      const retraso =
+        RETRASOS_CARGA[
+          Math.min(
+            intentoCargaActual,
+            RETRASOS_CARGA.length - 1
+          )
+        ];
+
+      window.setTimeout(
+        intentarCargarDatos,
+        retraso
+      );
+    }
+
+
+    function debeReintentarRespuesta_(respuesta) {
+      const mensaje = String(
+        respuesta?.mensaje || ''
+      )
+        .trim()
+        .toLowerCase();
+
+      if (!mensaje) {
+        return true;
+      }
+
+      return (
+        mensaje.includes('enlace') ||
+        mensaje.includes('código') ||
+        mensaje.includes('codigo') ||
+        mensaje.includes('token') ||
+        mensaje.includes('acceso') ||
+        mensaje.includes('servidor') ||
+        mensaje.includes('no existe') ||
+        mensaje.includes('no válido') ||
+        mensaje.includes('no valido')
       );
     }
 
@@ -431,7 +544,28 @@
               'Ha ocurrido un error.'
             )}
           </p>
+
+          <button
+            id="boton-reintentar-acceso"
+            class="boton"
+            type="button"
+            style="margin-top:18px;"
+          >
+            Volver a comprobar
+          </button>
         `;
+
+        const botonReintentar =
+          document.getElementById(
+            'boton-reintentar-acceso'
+          );
+
+        if (botonReintentar) {
+          botonReintentar.addEventListener(
+            'click',
+            cargarDatos
+          );
+        }
 
         return;
       }
