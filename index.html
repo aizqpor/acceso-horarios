@@ -1149,10 +1149,7 @@
       llamarApi(
         'comprobarSeleccionHorario',
         {
-          token:
-            soloInstrumento
-              ? TOKEN + '|SOLO_INSTRUMENTO'
-              : TOKEN,
+          token: TOKEN,
           seleccion: seleccionPendiente
         },
         mostrarResultadoComprobacion,
@@ -1337,10 +1334,7 @@
       llamarApi(
         'confirmarHorarioDefinitivo',
         {
-          token:
-            seleccionPendiente?.soloInstrumento
-              ? TOKEN + '|SOLO_INSTRUMENTO'
-              : TOKEN,
+          token: TOKEN,
           seleccion: seleccionPendiente
         },
         mostrarConfirmacionDefinitiva,
