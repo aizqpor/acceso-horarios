@@ -1080,10 +1080,10 @@
       }
 
       /*
-       * FLUJO ESPECIAL TOTALMENTE SEPARADO.
-       *
-       * Si está marcada la casilla, NO se valida ni se envía
-       * Lenguaje, Agrupaciones ni Coro.
+       * CASO SOLO INSTRUMENTO:
+       * no validamos ninguna otra asignatura.
+       * Guardamos el modo solo para la interfaz, pero al servidor
+       * enviamos únicamente los cuatro campos históricos.
        */
       if (soloInstrumento) {
         seleccionPendiente = {
@@ -1104,10 +1104,15 @@
           'Comprobando horario…';
 
         llamarApi(
-          'comprobarHorarioSoloInstrumento|' +
-            encodeURIComponent(instrumento),
+          'comprobarSeleccionHorario',
           {
-            token: TOKEN
+            token: TOKEN,
+            seleccion: {
+              instrumento,
+              lenguaje: null,
+              agrupacion: null,
+              coro: null
+            }
           },
           mostrarResultadoComprobacion,
           function(error) {
@@ -1174,7 +1179,12 @@
         'comprobarSeleccionHorario',
         {
           token: TOKEN,
-          seleccion: seleccionPendiente
+          seleccion: {
+            instrumento,
+            lenguaje,
+            agrupacion,
+            coro
+          }
         },
         mostrarResultadoComprobacion,
         function(error) {
@@ -1355,39 +1365,25 @@
           'Confirmando y reservando plazas…';
       }
 
-      if (seleccionPendiente?.soloInstrumento) {
-        llamarApi(
-          'confirmarHorarioSoloInstrumento|' +
-            encodeURIComponent(
-              seleccionPendiente.instrumento
-            ),
-          {
-            token: TOKEN
-          },
-          mostrarResultadoConfirmacion,
-          function(error) {
-            boton.disabled = false;
-            boton.textContent =
-              'Confirmar horario definitivamente';
-
-            mostrarMensajeConfirmacion(
-              'Ha ocurrido un error al confirmar el horario: ' +
-              (
-                error?.message ||
-                String(error)
-              )
-            );
-          }
-        );
-
-        return;
-      }
-
       llamarApi(
         'confirmarHorarioDefinitivo',
         {
           token: TOKEN,
-          seleccion: seleccionPendiente
+          seleccion: {
+            instrumento: seleccionPendiente.instrumento,
+            lenguaje:
+              seleccionPendiente.soloInstrumento
+                ? null
+                : seleccionPendiente.lenguaje,
+            agrupacion:
+              seleccionPendiente.soloInstrumento
+                ? null
+                : seleccionPendiente.agrupacion,
+            coro:
+              seleccionPendiente.soloInstrumento
+                ? null
+                : seleccionPendiente.coro
+          }
         },
         mostrarConfirmacionDefinitiva,
         function(error) {
