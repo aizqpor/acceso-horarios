@@ -678,14 +678,14 @@
             ? `
               <section
                 class="tarjeta"
-                id="bloque-una-asignatura"
+                id="bloque-solo-instrumento"
                 style="
                   border:2px solid #c86f00;
                   background:#fff8eb;
                 "
               >
                 <h2 style="margin-top:0;">
-                  ¿Está matriculado/a en una sola asignatura?
+                  ¿Está matriculado/a solo en Instrumento?
                 </h2>
 
                 <label
@@ -699,9 +699,9 @@
                   "
                 >
                   <input
-                    id="solo-una-asignatura"
+                    id="solo-instrumento"
                     type="checkbox"
-                    onchange="cambiarModoUnaAsignatura()"
+                    onchange="cambiarModoSoloInstrumento()"
                     style="
                       width:22px;
                       height:22px;
@@ -711,67 +711,27 @@
                   >
 
                   <span>
-                    SOLO ESTOY MATRICULADO/A EN UNA ASIGNATURA
+                    SOLO ESTOY MATRICULADO/A EN INSTRUMENTO
                     <br>
                     <small style="font-weight:normal;">
-                      Marque esta casilla únicamente si este alumno/a
-                      solo está matriculado/a en una asignatura.
+                      Marque esta casilla si el alumno/a está
+                      solo matriculado/a en Instrumento y no tiene
+                      ninguna asignatura más.
                     </small>
                   </span>
                 </label>
 
-                <div
-                  id="selector-asignatura-unica"
-                  style="display:none;margin-top:18px;"
+                <p
+                  style="
+                    margin-top:14px;
+                    margin-bottom:0;
+                    font-weight:bold;
+                    color:#9a4e00;
+                  "
                 >
-                  <label
-                    for="asignatura-unica"
-                    style="display:block;font-weight:bold;margin-bottom:8px;"
-                  >
-                    Indique la única asignatura:
-                  </label>
-
-                  <select
-                    id="asignatura-unica"
-                    onchange="actualizarAsignaturaUnica()"
-                    style="
-                      width:100%;
-                      padding:12px;
-                      border:1px solid #bbb;
-                      border-radius:9px;
-                      font-size:16px;
-                      background:white;
-                    "
-                  >
-                    <option value="">
-                      Seleccione una asignatura
-                    </option>
-                    <option value="INSTRUMENTO">
-                      Instrumento
-                    </option>
-                    <option value="LENGUAJE">
-                      Lenguaje Musical
-                    </option>
-                    <option value="AGRUPACION">
-                      Agrupaciones Musicales
-                    </option>
-                    <option value="CORO">
-                      Coro
-                    </option>
-                  </select>
-
-                  <p
-                    style="
-                      margin-top:12px;
-                      margin-bottom:0;
-                      font-weight:bold;
-                      color:#9a4e00;
-                    "
-                  >
-                    Si marca esta opción, solo deberá elegir horario
-                    de la asignatura seleccionada.
-                  </p>
-                </div>
+                  Al marcarla, solo deberá elegir uno de los
+                  horarios de su instrumento y confirmar.
+                </p>
               </section>
             `
             : ''
@@ -1050,94 +1010,15 @@
     }
 
 
-    function cambiarModoUnaAsignatura() {
+    function cambiarModoSoloInstrumento() {
       const marcado =
         Boolean(
           document.getElementById(
-            'solo-una-asignatura'
+            'solo-instrumento'
           )?.checked
         );
 
-      const selector =
-        document.getElementById(
-          'selector-asignatura-unica'
-        );
-
-      if (selector) {
-        selector.style.display =
-          marcado ? 'block' : 'none';
-      }
-
-      if (!marcado) {
-        const desplegable =
-          document.getElementById(
-            'asignatura-unica'
-          );
-
-        if (desplegable) {
-          desplegable.value = '';
-        }
-
-        mostrarTodosLosBloquesAsignaturas_();
-        return;
-      }
-
-      actualizarAsignaturaUnica();
-    }
-
-
-    function actualizarAsignaturaUnica() {
-      const marcado =
-        Boolean(
-          document.getElementById(
-            'solo-una-asignatura'
-          )?.checked
-        );
-
-      if (!marcado) {
-        mostrarTodosLosBloquesAsignaturas_();
-        return;
-      }
-
-      const asignatura =
-        String(
-          document.getElementById(
-            'asignatura-unica'
-          )?.value || ''
-        );
-
-      const mapa = {
-        INSTRUMENTO: 'bloque-instrumento',
-        LENGUAJE: 'bloque-lenguaje',
-        AGRUPACION: 'bloque-agrupacion',
-        CORO: 'bloque-coro'
-      };
-
-      Object.values(mapa).forEach(id => {
-        const bloque =
-          document.getElementById(id);
-
-        if (bloque) {
-          bloque.style.display = 'none';
-        }
-      });
-
-      if (mapa[asignatura]) {
-        const seleccionado =
-          document.getElementById(
-            mapa[asignatura]
-          );
-
-        if (seleccionado) {
-          seleccionado.style.display = '';
-        }
-      }
-    }
-
-
-    function mostrarTodosLosBloquesAsignaturas_() {
       [
-        'bloque-instrumento',
         'bloque-lenguaje',
         'bloque-agrupacion',
         'bloque-coro'
@@ -1146,9 +1027,26 @@
           document.getElementById(id);
 
         if (bloque) {
-          bloque.style.display = '';
+          bloque.style.display =
+            marcado ? 'none' : '';
         }
       });
+
+      /*
+       * Instrumento permanece siempre visible, porque esta
+       * modalidad sirve exclusivamente para alumnado que solo
+       * cursa su instrumento.
+       */
+      const bloqueInstrumento =
+        document.getElementById(
+          'bloque-instrumento'
+        );
+
+      if (bloqueInstrumento) {
+        bloqueInstrumento.style.display = '';
+      }
+
+      ocultarMensajeValidacion();
     }
 
 
@@ -1167,53 +1065,23 @@
       const coro =
         obtenerSeleccionado('coro');
 
-      const unaSolaAsignatura =
+      const soloInstrumento =
         Boolean(
           document.getElementById(
-            'solo-una-asignatura'
+            'solo-instrumento'
           )?.checked
         );
 
-      const asignaturaUnica =
-        unaSolaAsignatura
-          ? String(
-              document.getElementById(
-                'asignatura-unica'
-              )?.value || ''
-            )
-          : '';
+      if (!instrumento) {
+        mostrarMensajeValidacion(
+          'Debe seleccionar un horario de Instrumento.'
+        );
+        return;
+      }
 
-      if (unaSolaAsignatura) {
-        if (!asignaturaUnica) {
-          mostrarMensajeValidacion(
-            'Debe indicar la única asignatura en la que está matriculado/a.'
-          );
-          return;
-        }
-
-        const seleccionPorAsignatura = {
-          INSTRUMENTO: instrumento,
-          LENGUAJE: lenguaje,
-          AGRUPACION: agrupacion,
-          CORO: coro
-        };
-
-        if (!seleccionPorAsignatura[asignaturaUnica]) {
-          mostrarMensajeValidacion(
-            'Debe seleccionar un horario de la asignatura indicada.'
-          );
-          return;
-        }
-      } else {
+      if (!soloInstrumento) {
         const lenguajeAutomatico =
           Boolean(datosActuales?.lenguajeAutomatico);
-
-        if (!instrumento) {
-          mostrarMensajeValidacion(
-            'Debe seleccionar un horario de Instrumento.'
-          );
-          return;
-        }
 
         if (!lenguajeAutomatico && !lenguaje) {
           mostrarMensajeValidacion(
@@ -1239,29 +1107,19 @@
         }
       }
 
+      /*
+       * Si solo cursa Instrumento, enviamos exclusivamente
+       * esa elección al servidor. Las demás se fuerzan a null.
+       */
       seleccionPendiente = {
-        instrumento:
-          !unaSolaAsignatura ||
-          asignaturaUnica === 'INSTRUMENTO'
-            ? instrumento
-            : null,
+        instrumento,
         lenguaje:
-          !unaSolaAsignatura ||
-          asignaturaUnica === 'LENGUAJE'
-            ? lenguaje
-            : null,
+          soloInstrumento ? null : lenguaje,
         agrupacion:
-          !unaSolaAsignatura ||
-          asignaturaUnica === 'AGRUPACION'
-            ? agrupacion
-            : null,
+          soloInstrumento ? null : agrupacion,
         coro:
-          !unaSolaAsignatura ||
-          asignaturaUnica === 'CORO'
-            ? coro
-            : null,
-        unaSolaAsignatura,
-        asignaturaUnica
+          soloInstrumento ? null : coro,
+        soloInstrumento
       };
 
       const boton =
