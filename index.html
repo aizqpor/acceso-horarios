@@ -1112,15 +1112,28 @@
        * esa elección al servidor. Las demás se fuerzan a null.
        */
       seleccionPendiente = {
-        instrumento,
+        /*
+         * La marca SOLO INSTRUMENTO viaja también dentro del
+         * propio campo instrumento. Es deliberado: este campo
+         * ya existía desde el principio y atraviesa siempre
+         * GitHub/Worker/Apps Script.
+         */
+        instrumento:
+          soloInstrumento
+            ? '__SOLO_INSTRUMENTO__|' + instrumento
+            : instrumento,
         lenguaje:
           soloInstrumento
-            ? '__SOLO_INSTRUMENTO__'
+            ? null
             : lenguaje,
         agrupacion:
-          soloInstrumento ? null : agrupacion,
+          soloInstrumento
+            ? null
+            : agrupacion,
         coro:
-          soloInstrumento ? null : coro,
+          soloInstrumento
+            ? null
+            : coro,
         soloInstrumento
       };
 
