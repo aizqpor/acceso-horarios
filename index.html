@@ -1114,7 +1114,9 @@
       seleccionPendiente = {
         instrumento,
         lenguaje:
-          soloInstrumento ? null : lenguaje,
+          soloInstrumento
+            ? '__SOLO_INSTRUMENTO__'
+            : lenguaje,
         agrupacion:
           soloInstrumento ? null : agrupacion,
         coro:
