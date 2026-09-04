@@ -1079,62 +1079,86 @@
         return;
       }
 
-      if (!soloInstrumento) {
-        const lenguajeAutomatico =
-          Boolean(datosActuales?.lenguajeAutomatico);
+      /*
+       * FLUJO ESPECIAL TOTALMENTE SEPARADO.
+       *
+       * Si está marcada la casilla, NO se valida ni se envía
+       * Lenguaje, Agrupaciones ni Coro.
+       */
+      if (soloInstrumento) {
+        seleccionPendiente = {
+          instrumento,
+          lenguaje: null,
+          agrupacion: null,
+          coro: null,
+          soloInstrumento: true
+        };
 
-        if (!lenguajeAutomatico && !lenguaje) {
-          mostrarMensajeValidacion(
-            'Debe seleccionar también un horario de Lenguaje Musical.'
+        const boton =
+          document.getElementById(
+            'boton-continuar'
           );
-          return;
-        }
 
-        const necesitaColectivas =
-          document.querySelector(
-            'input[name="agrupacion"]'
-          ) !== null;
+        boton.disabled = true;
+        boton.textContent =
+          'Comprobando horario…';
 
-        if (
-          necesitaColectivas &&
-          (!agrupacion || !coro)
-        ) {
-          mostrarMensajeValidacion(
-            'Debe seleccionar también Agrupaciones Musicales ' +
-            'y Coro.'
-          );
-          return;
-        }
+        llamarApi(
+          'comprobarHorarioSoloInstrumento|' +
+            encodeURIComponent(instrumento),
+          {
+            token: TOKEN
+          },
+          mostrarResultadoComprobacion,
+          function(error) {
+            boton.disabled = false;
+            boton.textContent = 'Continuar';
+
+            mostrarMensajeValidacion(
+              'Ha ocurrido un error al comprobar el horario: ' +
+              (
+                error?.message ||
+                String(error)
+              )
+            );
+          }
+        );
+
+        return;
       }
 
-      /*
-       * Si solo cursa Instrumento, enviamos exclusivamente
-       * esa elección al servidor. Las demás se fuerzan a null.
-       */
+      const lenguajeAutomatico =
+        Boolean(datosActuales?.lenguajeAutomatico);
+
+      if (!lenguajeAutomatico && !lenguaje) {
+        mostrarMensajeValidacion(
+          'Debe seleccionar también un horario de Lenguaje Musical.'
+        );
+        return;
+      }
+
+      const necesitaColectivas =
+        document.querySelector(
+          'input[name="agrupacion"]'
+        ) !== null;
+
+      if (
+        necesitaColectivas &&
+        (!agrupacion || !coro)
+      ) {
+        mostrarMensajeValidacion(
+          'Debe seleccionar también Agrupaciones Musicales ' +
+          'y Coro.'
+        );
+        return;
+      }
+
       seleccionPendiente = {
-        /*
-         * La marca SOLO INSTRUMENTO viaja también dentro del
-         * propio campo instrumento. Es deliberado: este campo
-         * ya existía desde el principio y atraviesa siempre
-         * GitHub/Worker/Apps Script.
-         */
-        instrumento:
-          soloInstrumento
-            ? '__SOLO_INSTRUMENTO__|' + instrumento
-            : instrumento,
-        lenguaje:
-          soloInstrumento
-            ? null
-            : lenguaje,
-        agrupacion:
-          soloInstrumento
-            ? null
-            : agrupacion,
-        coro:
-          soloInstrumento
-            ? null
-            : coro,
-        soloInstrumento
+        instrumento,
+        lenguaje,
+        agrupacion,
+        coro,
+        soloInstrumento: false
       };
 
       const boton =
@@ -1329,6 +1353,34 @@
         boton.disabled = true;
         boton.textContent =
           'Confirmando y reservando plazas…';
+      }
+
+      if (seleccionPendiente?.soloInstrumento) {
+        llamarApi(
+          'confirmarHorarioSoloInstrumento|' +
+            encodeURIComponent(
+              seleccionPendiente.instrumento
+            ),
+          {
+            token: TOKEN
+          },
+          mostrarResultadoConfirmacion,
+          function(error) {
+            boton.disabled = false;
+            boton.textContent =
+              'Confirmar horario definitivamente';
+
+            mostrarMensajeConfirmacion(
+              'Ha ocurrido un error al confirmar el horario: ' +
+              (
+                error?.message ||
+                String(error)
+              )
+            );
+          }
+        );
+
+        return;
       }
 
       llamarApi(
