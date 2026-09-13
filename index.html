@@ -6,21 +6,21 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Elección de horario · C.E.M. Luis de Narváez</title>
   <style>
-    :root{--purple:#49306b;--purple2:#654695;--red:#c92a2a;--green:#18794e;--bg:#f4f5f8;--line:#dfe2e8}
+    :root{--blue:#1f5f89;--blue2:#317fad;--blue-soft:#cceafb;--red:#c92a2a;--green:#18794e;--bg:#f1f8fc;--line:#cfe1ec}
     *{box-sizing:border-box} body{margin:0;background:var(--bg);font:17px/1.5 system-ui,-apple-system,sans-serif;color:#202124}
-    header{padding:30px 18px;text-align:center;color:white;background:linear-gradient(135deg,var(--purple2),#32204c)}
-    header h1{margin:0;font-size:clamp(25px,5vw,38px)} header p{margin:4px 0 0;font-size:19px}
+    header{padding:22px 18px;color:#143f5b;background:linear-gradient(135deg,#e1f4ff,var(--blue-soft));border-bottom:1px solid #a9d4eb}
+    .header-inner{width:min(880px,100%);margin:auto;display:flex;align-items:center;justify-content:center;gap:28px}.header-logo{width:150px;height:150px;object-fit:contain;border-radius:16px}.header-copy{text-align:left}header h1{margin:0;font-size:clamp(25px,5vw,38px);color:#174f74}header p{margin:4px 0 0;font-size:19px;color:#326986}
     main{width:min(880px,calc(100% - 28px));margin:30px auto 70px}.card{background:white;border:1px solid var(--line);border-radius:18px;padding:26px;margin:18px 0;box-shadow:0 8px 24px #1d173010}
-    h2{margin:0 0 16px;color:#35224f} h3{color:#49306b}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.full{grid-column:1/-1}
+    h2{margin:0 0 16px;color:#174f74} h3{color:var(--blue)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.full{grid-column:1/-1}
     label{display:block;font-weight:700;margin-bottom:5px}input,select{width:100%;padding:13px 14px;border:1px solid #aeb4bf;border-radius:10px;font:inherit;background:white}
-    button{border:0;border-radius:11px;padding:14px 19px;font:bold 17px system-ui;cursor:pointer}.primary{background:var(--purple2);color:white;width:100%}.secondary{background:#ece7f3;color:#35224f}.danger{background:#fff0f0;color:#a61e1e}
-    button:disabled{opacity:.55;cursor:wait}.child{border:1px solid var(--line);border-radius:14px;padding:18px;margin:14px 0}.message{border-left:7px solid var(--purple2)}.error{border-left-color:var(--red)}.success{border-left-color:var(--green)}
+    button{border:0;border-radius:11px;padding:14px 19px;font:bold 17px system-ui;cursor:pointer}.primary{background:var(--blue2);color:white;width:100%}.secondary{background:#e3f2fa;color:#174f74}.danger{background:#fff0f0;color:#a61e1e}
+    button:disabled{opacity:.55;cursor:wait}.child{border:1px solid var(--line);border-radius:14px;padding:18px;margin:14px 0}.message{border-left:7px solid var(--blue2)}.error{border-left-color:var(--red)}.success{border-left-color:var(--green)}
     .options{display:grid;gap:10px}.option{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:13px}.option input{width:auto;margin-top:5px}.muted{color:#666;font-size:15px}.hidden{display:none!important}.row{display:flex;gap:10px;align-items:center;justify-content:space-between}.timer{font-size:24px;font-weight:800;color:var(--red)}
-    @media(max-width:620px){.grid{grid-template-columns:1fr}.card{padding:19px}.full{grid-column:auto}}
+    @media(max-width:620px){.header-inner{gap:14px}.header-logo{width:105px;height:105px}.header-copy{text-align:left}.grid{grid-template-columns:1fr}.card{padding:19px}.full{grid-column:auto}}
   </style>
 </head>
 <body>
-  <header><h1 id="center">C.E.M. Luis de Narváez</h1><p id="year">Elección de horario</p></header>
+  <header><div class="header-inner"><img class="header-logo" src="logo-conservatorio.png" alt="Logotipo del C.E.M. Luis de Narváez"><div class="header-copy"><h1 id="center">C.E.M. Luis de Narváez</h1><p id="year">Elección de horario</p></div></div></header>
   <main id="app"><section class="card">Cargando información…</section></main>
   <script>
     const API='https://horarios.cemluisdenarvaez.es';
