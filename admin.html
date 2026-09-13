@@ -11,7 +11,7 @@
 <body>
 <header><div class="head"><img src="logo-conservatorio.png" alt="Logo"><div><h1>Panel de administración</h1><p>C.E.M. Luis de Narváez · Elección de horarios</p></div></div></header>
 <main class="wrap">
-  <section id="login" class="card login"><h2>Acceso protegido</h2><p>Introduce la contraseña de administración.</p><label>Contraseña</label><input id="password" type="password" autocomplete="current-password"><p><button onclick="login()">ENTRAR</button></p><div id="loginError" class="muted"></div></section>
+  <section id="login" class="card login"><h2>Acceso protegido</h2><p>Introduce la contraseña de administración.</p><label>Contraseña</label><input id="password" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')adminLogin()"><p><button onclick="adminLogin()">ENTRAR</button></p><div id="loginError" class="muted"></div></section>
   <div id="panel" class="hidden">
     <div class="tabs">
       <button data-tab="summary" class="on">Resumen</button><button data-tab="config">Configuración</button><button data-tab="sessions">Convocatorias</button><button data-tab="teachers">Profesorado</button><button data-tab="options">Horarios y ratios</button><button data-tab="queues">Colas</button><button data-tab="results">Resultados</button><button class="danger" onclick="logout()">Salir</button>
@@ -30,7 +30,7 @@ const API='https://registro-horarios.aizqpor.workers.dev';let token=sessionStora
 const $=id=>document.getElementById(id), esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab],.tab').forEach(x=>x.classList.remove('on'));b.classList.add('on');$(b.dataset.tab).classList.add('on')});
 async function request(path,opt={}){const r=await fetch(API+path,{...opt,headers:{'content-type':'application/json',...(token?{authorization:'Bearer '+token}:{}),...(opt.headers||{})}}),j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.message||'No se pudo completar la operación.');return j}
-async function login(){try{const j=await request('/api/admin/acceso',{method:'POST',body:JSON.stringify({password:$('password').value})});token=j.token;sessionStorage.setItem('adminToken',token);await load()}catch(e){$('loginError').textContent=e.message}}
+async function adminLogin(){try{$('loginError').textContent='Comprobando…';const j=await request('/api/admin/acceso',{method:'POST',body:JSON.stringify({password:$('password').value})});token=j.token;sessionStorage.setItem('adminToken',token);await load()}catch(e){$('loginError').textContent=e.message}}
 function logout(){sessionStorage.removeItem('adminToken');location.reload()}
 async function load(){try{data=await request('/api/admin/datos');$('login').classList.add('hidden');$('panel').classList.remove('hidden');render()}catch(e){$('loginError').textContent=e.message;$('login').classList.remove('hidden');$('panel').classList.add('hidden')}}
 async function action(body){try{await request('/api/admin/accion',{method:'POST',body:JSON.stringify(body)});await load();alert('Cambios guardados correctamente.')}catch(e){alert(e.message)}}
