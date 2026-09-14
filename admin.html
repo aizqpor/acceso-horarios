@@ -18,7 +18,7 @@
   <section id="login" class="card login"><h2>Acceso protegido</h2><p>Introduce la contraseña de administración.</p><label>Contraseña</label><input id="password" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')adminLogin()"><p><button onclick="adminLogin()">ENTRAR</button></p><div id="loginError" class="muted"></div></section>
   <div id="panel" class="hidden">
     <div class="tabs">
-      <button data-tab="summary" class="on">Resumen</button><button data-tab="config">Configuración</button><button data-tab="sessions">Convocatorias</button><button data-tab="roster">Alumnado</button><button data-tab="teachers">Profesorado</button><button data-tab="visualOptions">Horarios y ratios</button><button data-tab="queues">Colas</button><button data-tab="results">Resultados</button><button class="danger" onclick="logout()">Salir</button>
+      <button data-tab="summary" class="on">Resumen</button><button data-tab="config">Configuración</button><button data-tab="sessions">Convocatorias</button><button data-tab="roster">Alumnado</button><button data-tab="teachers">Profesorado</button><button data-tab="visualOptions">Horarios y ratios</button><button data-tab="queues">Colas</button><button data-tab="results">Resultados</button><button data-tab="massTest">Prueba masiva</button><button class="danger" onclick="logout()">Salir</button>
     </div>
     <section id="summary" class="tab on card"><h2>Resumen</h2><div id="stats" class="stats"></div><div class="notice">Todos los cambios se guardan directamente en la base de datos. No es necesario utilizar código.</div></section>
     <section id="config" class="tab card"><h2>Configuración general</h2><div class="grid"><div><label>Nombre del centro</label><input id="centerName"></div><div><label>Curso académico</label><input id="academicYear" placeholder="2026-2027"></div><div><label>Minutos por turno</label><input id="turnMinutes" type="number" min="1"></div><div><label>Aviso de proximidad (familias)</label><input id="proximity" type="number" min="1"></div><div class="full"><button onclick="saveSettings()">GUARDAR CONFIGURACIÓN</button></div></div><div class="reset-box"><button class="danger" onclick="resetSection('config','la configuración general')">RESETEAR CONFIGURACIÓN</button></div></section>
@@ -29,6 +29,7 @@
     <section id="queues" class="tab card"><h2>Colas de números de orden</h2><div class="actions"><a class="btn" onclick="downloadCsv('queues')">DESCARGAR COLAS</a></div><div id="queueList"></div><h3>Detalle del alumnado</h3><div id="studentList"></div><div class="reset-box"><button class="danger" onclick="resetSection('queues','todas las colas, solicitudes y familias')">RESETEAR COLAS Y SOLICITUDES</button></div></section>
     <section id="results" class="tab card"><h2>Resultados y cuadrantes</h2><div class="actions no-print"><a class="btn" onclick="downloadCsv('results')">DESCARGAR ELECCIONES</a><a class="btn" onclick="downloadCsv('teachers')">DESCARGAR DATOS</a><select id="resultTeacher" onchange="renderResultCalendar()" style="max-width:330px"></select><select id="resultInstrument" onchange="renderResultCalendar()" style="max-width:260px"></select><button onclick="printTeachers()">PDF PROFESORADO</button><select id="resultStudent" onchange="renderStudentSchedules()" style="max-width:330px"></select><button onclick="printStudents()">PDF ALUMNADO</button></div><div id="teacherPrint"><div id="printTitle"></div><div id="resultCalendar" class="schedule-wrap"></div></div><div id="studentPrint"><h2 style="text-align:center">Horarios del alumnado</h2><div id="studentSchedules" class="student-sheets"></div></div><h3 class="no-print">Detalle de elecciones</h3><div id="resultList" class="no-print"></div><div class="reset-box no-print"><button class="danger" onclick="resetSection('results','todas las elecciones confirmadas')">RESETEAR RESULTADOS</button></div></section>
     <section id="visualOptions" class="tab card"><h2>Horarios y ratios</h2><p class="muted">Crea un cuadrante y configura cada recuadro directamente. Las horas no lectivas no se muestran a las familias.</p><div class="calendar-builder"><input id="vcId" type="hidden"><div class="grid3"><div><label>Nombre del cuadrante</label><input id="vcName" placeholder="Ej.: María López"></div><div><label>Instrumento</label><select id="vcInstrument"></select></div><div><label>Profesor/a vinculado</label><select id="vcTeacher"></select></div><div><label>Desde</label><input id="vcStart" type="time" value="16:00" step="1800"></div><div><label>Hasta</label><input id="vcEnd" type="time" value="20:00" step="1800"></div><div><label>Días</label><div id="vcDays" class="days-check"></div></div><div class="full actions"><button onclick="saveVisualCalendar()">GUARDAR CUADRANTE</button><button class="secondary" onclick="clearVisualCalendar()">NUEVO</button><button id="vcDelete" class="danger hidden" onclick="deleteVisualCalendar()">ELIMINAR CUADRANTE</button></div></div></div><div id="vcList" class="calendar-list"></div><div id="vcGrid" class="schedule-wrap"></div><hr><h3>Tipos de horas no lectivas</h3><p class="muted">Crea, cambia de nombre o elimina Tutoría, Guardia o cualquier otra actividad.</p><div class="actions"><input id="vcNewType" placeholder="Nombre de la nueva hora no lectiva" style="max-width:340px"><input id="vcNewColor" type="color" value="#d8eaf7" style="width:70px"><button onclick="createVisualType()">CREAR TIPO</button></div><div id="vcTypeList"></div><div class="reset-box"><button class="danger" onclick="resetSection('schedules','todos los horarios, ratios y actividades no lectivas')">RESETEAR HORARIOS Y RATIOS</button></div></section>
+    <section id="massTest" class="tab card"><h2>Prueba masiva</h2><div class="notice"><strong>Entorno aislado.</strong> Esta simulación utiliza TEST_DB, no modifica el censo real y no envía ningún correo.</div><div class="grid"><div><label>Número de familias simuladas</label><input id="massTotal" type="number" min="1" max="500" value="84"></div><div><label>Solicitudes simultáneas</label><select id="massConcurrency"><option>5</option><option>10</option><option selected>25</option><option>50</option><option>84</option></select></div><div class="full actions"><button id="massStart" onclick="startMassTest()">INICIAR PRUEBA COMPLETA</button><button class="secondary" onclick="refreshMassTest()">ACTUALIZAR INFORME</button><button class="danger" onclick="resetMassTest()">BORRAR PRUEBA</button></div></div><div id="massProgress" class="muted" style="margin-top:14px">Todavía no se ha iniciado ninguna simulación.</div><div id="massReport"></div></section>
   </div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -104,6 +105,73 @@ function updateVisualType(id){action({action:'non-teaching-type-save',id,name:$(
 function deleteVisualType(id){if(confirm('¿Eliminar este tipo de hora no lectiva? Solo será posible si no está utilizado.'))action({action:'non-teaching-type-delete',id})}
 function rosterBirthYear(value){const text=String(value??'').trim(),four=text.match(/(?:19|20)\d{2}/);if(four)return Number(four[0]);if(/^\d{4}$/.test(text))return Number(text);const parts=text.match(/\d+/g)||[],two=parts.length>=3?Number(parts[parts.length-1]):NaN;if(Number.isInteger(two)&&two>=0&&two<100)return two<=30?2000+two:1900+two;return NaN}
 importRoster=async function(){const file=$('rosterFile').files[0];if(!file)return alert('Selecciona un archivo Excel, CSV o TXT.');try{let rows=[],filename=file.name.toLowerCase();if(filename.endsWith('.xlsx')||filename.endsWith('.xls')){if(typeof XLSX==='undefined')throw Error('No se pudo cargar el lector de Excel. Comprueba la conexión y vuelve a intentarlo.');const book=XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:false}),sheet=book.Sheets[book.SheetNames[0]];rows=XLSX.utils.sheet_to_json(sheet,{header:1,defval:'',raw:false})}else{const text=(await file.text()).replace(/^\uFEFF/,''),lines=text.split(/\r?\n/).filter(x=>x.trim());if(!lines.length)throw Error('El archivo está vacío.');const counts=['\t',';',','].map(d=>[d,(lines[0].split(d).length-1)]),delimiter=counts.sort((a,b)=>b[1]-a[1])[0][0];rows=lines.map(line=>parseRosterLine(line,delimiter))}rows=rows.filter(r=>Array.isArray(r)&&r.some(v=>String(v).trim()));if(!rows.length)throw Error('El archivo está vacío.');const norm=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,''),headers=rows[0].map(norm),headerFound=headers.some(h=>h.includes('nombre')||h.includes('alumno'));let indexes={name:0,birth:1,instrument:2,course:3};if(headerFound){const find=(words,fallback)=>{const i=headers.findIndex(h=>words.some(w=>h.includes(w)));return i>=0?i:fallback};indexes={name:find(['nombre','alumno'],0),birth:find(['nacimiento','nacim','ano'],1),instrument:find(['instrumento','especialidad'],2),course:find(['curso','nivel'],3)};rows.shift()}const parsed=rows.map((r,i)=>{const courseMatch=String(r[indexes.course]??'').match(/[1-4]/);return{name:String(r[indexes.name]??'').trim(),birthYear:rosterBirthYear(r[indexes.birth]),instrument:String(r[indexes.instrument]??'').trim(),course:courseMatch?Number(courseMatch[0]):0,row:i+(headerFound?2:1)}}),bad=parsed.find(r=>!r.name||!Number.isInteger(r.birthYear)||r.birthYear<1900||r.birthYear>2035||!r.instrument||![1,2,3,4].includes(r.course));if(bad)throw Error(`Revisa la fila ${bad.row}: debe contener nombre, fecha de nacimiento, curso e instrumento.`);$('rosterImportInfo').textContent=`Importando ${parsed.length} alumnos…`;await request('/api/admin/accion',{method:'POST',body:JSON.stringify({action:'roster-import',rows:parsed.map(({row,...r})=>r)})});$('rosterImportInfo').textContent=`Se han importado ${parsed.length} alumnos correctamente.`;$('rosterFile').value='';await load()}catch(e){$('rosterImportInfo').textContent=e.message}}
+// Admite también los TXT del centro separados por raya larga:
+// Nombre — fecha de nacimiento — curso — instrumento
+const importRosterBase=importRoster;
+importRoster=async function(){
+  const file=$('rosterFile').files[0];
+  if(!file)return alert('Selecciona un archivo Excel, CSV o TXT.');
+  if(!/\.txt$/i.test(file.name))return importRosterBase();
+  try{
+    const text=(await file.text()).replace(/^\uFEFF/,''),lines=text.split(/\r?\n/).filter(x=>x.trim());
+    if(!lines.length)throw Error('El archivo está vacío.');
+    const usesDash=lines.some(line=>/\s[—–]\s/.test(line));
+    if(!usesDash)return importRosterBase();
+    let rows=lines.map(line=>line.split(/\s+[—–]\s+/).map(value=>value.trim())).filter(row=>row.some(Boolean));
+    const norm=value=>String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,''),headers=rows[0].map(norm),headerFound=headers.some(header=>header.includes('nombre')||header.includes('alumno'));
+    let indexes={name:0,birth:1,course:2,instrument:3};
+    if(headerFound){
+      const find=(words,fallback)=>{const index=headers.findIndex(header=>words.some(word=>header.includes(word)));return index>=0?index:fallback};
+      indexes={name:find(['nombre','alumno'],0),birth:find(['nacimiento','nacim','ano'],1),course:find(['curso','nivel'],2),instrument:find(['instrumento','especialidad'],3)};
+      rows.shift();
+    }
+    const parsed=rows.map((row,index)=>{const courseMatch=String(row[indexes.course]??'').match(/[1-4]/);return{name:String(row[indexes.name]??'').trim(),birthYear:rosterBirthYear(row[indexes.birth]),course:courseMatch?Number(courseMatch[0]):0,instrument:String(row[indexes.instrument]??'').trim(),row:index+(headerFound?2:1)}}),bad=parsed.find(item=>!item.name||!Number.isInteger(item.birthYear)||item.birthYear<1900||item.birthYear>2035||!item.instrument||![1,2,3,4].includes(item.course));
+    if(bad)throw Error(`Revisa la fila ${bad.row}: debe contener nombre, fecha de nacimiento, curso e instrumento.`);
+    $('rosterImportInfo').textContent=`Importando ${parsed.length} alumnos…`;
+    await request('/api/admin/accion',{method:'POST',body:JSON.stringify({action:'roster-import',rows:parsed.map(({row,...item})=>item)})});
+    $('rosterImportInfo').textContent=`Se han importado ${parsed.length} alumnos correctamente.`;
+    $('rosterFile').value='';
+    await load();
+  }catch(error){$('rosterImportInfo').textContent=error.message}
+}
+let massRunId=0,massStartedAt=0;
+async function massRequest(command,extra={}){return request('/api/admin/prueba-masiva',{method:'POST',body:JSON.stringify({command,runId:massRunId,...extra})})}
+async function runLimited(items,limit,task){let next=0,results=[];async function worker(){while(next<items.length){const index=next++;try{results[index]=await task(items[index])}catch(error){results[index]={ok:false,message:error.message}}}}await Promise.all(Array.from({length:Math.min(limit,items.length)},worker));return results}
+async function startMassTest(){
+  if(!confirm('Se iniciará una simulación completa en la base de pruebas. No se enviarán correos. ¿Continuar?'))return;
+  const button=$('massStart'),total=Math.max(1,Math.min(500,Number($('massTotal').value)||84)),concurrency=Math.max(1,Number($('massConcurrency').value)||25);
+  button.disabled=true;massStartedAt=performance.now();
+  try{
+    $('massProgress').textContent='Preparando la base aislada…';
+    const setup=await massRequest('setup',{total});massRunId=setup.runId;
+    $('massProgress').textContent=`Solicitando ${setup.total} números de orden, hasta ${concurrency} a la vez…`;
+    const registrations=await runLimited(Array.from({length:setup.total},(_,i)=>i+1),concurrency,seq=>massRequest('register',{seq}));
+    const registrationErrors=registrations.filter(result=>!result?.ok).length;
+    $('massProgress').textContent=`Solicitudes terminadas (${registrationErrors} errores). Comenzando la elección…`;
+    await massRequest('begin');
+    let rounds=0,choiceErrors=0;
+    while(rounds<600){
+      const activation=await massRequest('activate'),ids=activation.studentIds||[];
+      if(!ids.length)break;
+      rounds++;
+      $('massProgress').textContent=`Elección en curso: ronda ${rounds}, ${ids.length} familias eligiendo simultáneamente…`;
+      const choices=await runLimited(ids,concurrency,studentId=>massRequest('choose',{studentId}));
+      choiceErrors+=choices.filter(result=>!result?.ok).length;
+    }
+    const report=await massRequest('finish');
+    report.registrationErrors=registrationErrors;report.choiceErrors=choiceErrors;report.elapsedMs=Math.round(performance.now()-massStartedAt);renderMassReport(report);
+    $('massProgress').textContent='Prueba masiva finalizada.';
+  }catch(error){$('massProgress').textContent=`La prueba se ha detenido: ${error.message}`;await refreshMassTest().catch(()=>{})}
+  finally{button.disabled=false}
+}
+async function refreshMassTest(){try{const report=await massRequest('status');renderMassReport(report);$('massProgress').textContent=report.run?'Informe actualizado.':'No hay una prueba guardada.'}catch(error){$('massProgress').textContent=error.message}}
+function renderMassReport(report){
+  if(!report.run){$('massReport').innerHTML='';return}
+  const success=report.registered===report.total&&report.duplicates===0&&report.overCapacity===0;
+  const duration=report.elapsedMs?' · '+(report.elapsedMs/1000).toFixed(2)+' segundos':'';
+  $('massReport').innerHTML=`<h3>Informe de la simulación</h3><div class="stats"><div class="stat"><strong>${report.registered}</strong>Solicitudes registradas</div><div class="stat"><strong>${report.completed}</strong>Elecciones completadas</div><div class="stat"><strong>${report.duplicates}</strong>Números duplicados</div><div class="stat"><strong>${report.overCapacity}</strong>Ratios excedidas</div></div><div class="notice ${success?'good':'danger'}"><strong>${success?'Prueba correcta':'Revisión necesaria'}.</strong> ${report.waiting||0} esperando · ${report.active||0} activos · ${report.noPlace||0} sin plaza${duration}.</div>`;
+}
+async function resetMassTest(){if(!confirm('¿Borrar todos los datos de la simulación? La información real no se verá afectada.'))return;try{await massRequest('reset');massRunId=0;$('massReport').innerHTML='';$('massProgress').textContent='Se han borrado los datos de la prueba.'}catch(error){$('massProgress').textContent=error.message}}
 if(token)load();
 </script>
 </body></html>
