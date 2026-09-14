@@ -44,7 +44,7 @@
     }
     function setHeader(){document.getElementById('center').textContent=config.centerName;document.getElementById('year').textContent='Elección de horario '+config.academicYear;}
     function renderRegistration(){
-      const openCourses=[...new Set(config.sessions.filter(s=>new Date(s.registrationOpen)<=new Date(config.now)&&new Date(s.registrationClose)>new Date(config.now)).flatMap(s=>s.courses))];
+      const openCourses=[...new Set(config.sessions.filter(s=>new Date(s.registrationOpen)<=new Date(config.now)&&new Date(s.selectionClose||s.registrationClose)>new Date(config.now)).flatMap(s=>s.courses))];
       if(!openCourses.length){document.getElementById('app').innerHTML='<section class="card message"><h2>Inscripción cerrada</h2><p>Ahora mismo no se están asignando nuevos números de orden.</p></section>';return;}
       const courses=openCourses.sort().map(c=>`<option value="${c}">${c}.º</option>`).join('');
       const instruments=config.instruments.map(i=>`<option value="${i.id}">${esc(i.name)}</option>`).join('');
