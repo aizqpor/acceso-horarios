@@ -46,20 +46,21 @@
     function renderRegistration(){
       const openCourses=[...new Set(config.sessions.filter(s=>new Date(s.registrationOpen)<=new Date(config.now)&&new Date(s.registrationClose)>new Date(config.now)).flatMap(s=>s.courses))];
       if(!openCourses.length){document.getElementById('app').innerHTML='<section class="card message"><h2>Inscripción cerrada</h2><p>Ahora mismo no se están asignando nuevos números de orden.</p></section>';return;}
-      document.getElementById('app').innerHTML=`<form id="registration"><section class="card"><h2>Datos de la familia</h2><div class="grid"><div><label>Nombre del padre, madre o tutor/a</label><input name="guardianName" required maxlength="120"></div><div><label>Correo electrónico</label><input name="email" type="email" required maxlength="180"></div><div class="full"><label>Teléfono (opcional)</label><input name="phone" type="tel" maxlength="40"></div></div></section><section class="card"><div class="row"><h2>Alumnado</h2><button type="button" class="add-child" onclick="addChild()">AÑADIR OTRO HIJO/A</button></div><div id="children"></div></section><section class="card"><button id="send" class="primary">Obtener número de orden</button></section></form>`;
-      addChild();document.getElementById('registration').addEventListener('submit',submitRegistration);
-    }
-    function addChild(){
-      const index=document.querySelectorAll('.child').length;
-      if(index>=6)return;
-      const courses=[...new Set(config.sessions.flatMap(s=>s.courses))].sort().map(c=>`<option value="${c}">${c}.º</option>`).join('');
+      const courses=openCourses.sort().map(c=>`<option value="${c}">${c}.º</option>`).join('');
       const instruments=config.instruments.map(i=>`<option value="${i.id}">${esc(i.name)}</option>`).join('');
-      document.getElementById('children').insertAdjacentHTML('beforeend',`<div class="child"><div class="row"><h3>Alumno/a ${index+1}</h3>${index?'<button type="button" class="danger" onclick="this.closest(\'.child\').remove();renumber()">Quitar</button>':''}</div><div class="grid"><div class="full"><label>Nombre y apellidos</label><input data-field="name" required maxlength="140"></div><div><label>Año de nacimiento</label><input data-field="birthYear" type="number" min="2000" max="2035" required></div><div><label>Curso</label><select data-field="course" required>${courses}</select></div><div><label>Instrumento</label><select data-field="instrumentId" required>${instruments}</select></div></div></div>`);
+      document.getElementById('app').innerHTML=`<form id="registration"><section class="card"><h2>Inscripción y obtención de número de orden</h2><div class="grid"><div class="full"><label>Nombre y apellidos del alumno/a</label><input name="studentName" required maxlength="140" autocomplete="name"></div><div><label>Fecha de nacimiento</label><input name="birthDate" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" pattern="\\d{2}/\\d{2}/\\d{4}" maxlength="10" required autocomplete="bday"></div><div><label>Curso</label><select name="course" required>${courses}</select></div><div><label>Instrumento</label><select name="instrumentId" required>${instruments}</select></div><div><label>Correo electrónico</label><input name="email" type="email" required maxlength="180" autocomplete="email"></div><div><label>Confirmar correo electrónico</label><input name="emailConfirm" type="email" required maxlength="180" autocomplete="off" autocapitalize="none" spellcheck="false"></div></div><p class="muted">Escriba de nuevo el correo electrónico. Por seguridad, no se permite pegarlo en el segundo campo.</p></section><section class="card"><button id="send" class="primary">Obtener número de orden</button></section></form>`;
+      const confirmEmail=document.querySelector('[name=emailConfirm]');
+      ['paste','drop'].forEach(type=>confirmEmail.addEventListener(type,event=>{event.preventDefault();alert('Escriba manualmente la confirmación del correo electrónico.')}));
+      document.querySelector('[name=birthDate]').addEventListener('input',formatBirthDate);
+      document.getElementById('registration').addEventListener('submit',submitRegistration);
     }
-    function renumber(){document.querySelectorAll('.child h3').forEach((h,i)=>h.textContent='Alumno/a '+(i+1));}
+    function formatBirthDate(event){let value=event.target.value.replace(/\D/g,'').slice(0,8);if(value.length>4)value=value.slice(0,2)+'/'+value.slice(2,4)+'/'+value.slice(4);else if(value.length>2)value=value.slice(0,2)+'/'+value.slice(2);event.target.value=value}
     async function submitRegistration(event){
       event.preventDefault();const form=event.currentTarget,button=document.getElementById('send');button.disabled=true;button.textContent='Asignando números…';
-      const body={guardianName:form.guardianName.value,email:form.email.value,phone:form.phone.value,children:[...document.querySelectorAll('.child')].map(c=>({name:c.querySelector('[data-field=name]').value,birthYear:Number(c.querySelector('[data-field=birthYear]').value),course:Number(c.querySelector('[data-field=course]').value),instrumentId:Number(c.querySelector('[data-field=instrumentId]').value)}))};
+      const email=form.email.value.trim().toLowerCase(),emailConfirm=form.emailConfirm.value.trim().toLowerCase();
+      if(email!==emailConfirm){button.disabled=false;button.textContent='Obtener número de orden';return alert('Los dos correos electrónicos no coinciden. Revise que estén escritos exactamente igual.')}
+      const child={name:form.studentName.value,birthDate:form.birthDate.value,course:Number(form.course.value),instrumentId:Number(form.instrumentId.value)};
+      const body={email,emailConfirm,children:[child]};
       try{const data=await api('/api/registro',{method:'POST',body:JSON.stringify(body)});document.getElementById('app').innerHTML=`<section class="card message success"><h2>Número de orden asignado</h2><p>Hemos enviado la confirmación a <strong>${esc(body.email)}</strong>.</p>${data.students.map(s=>`<p><strong>${esc(s.name)}</strong><br>${s.course}.º · ${esc(s.instrument)} · Número <strong>${s.queueNumber}</strong></p>`).join('')}</section>`;}catch(e){button.disabled=false;button.textContent='Obtener número de orden';alert(e.message)}
     }
 
