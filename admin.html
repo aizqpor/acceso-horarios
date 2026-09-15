@@ -224,10 +224,17 @@ const renderVisualSetupWithCalendarActions=renderVisualSetup;
 renderVisualSetup=function(){
   renderVisualSetupWithCalendarActions();
   const calendars=visualCalendars();
-  if(calendars.length)$('vcList').innerHTML=calendars.map(c=>`<div class="actions"><button class="secondary ${String(c.id)===String(vcCurrent)?'on':''}" onclick="openVisualCalendar('${c.id}',false)">${esc(c.name)}</button><button class="secondary" onclick="editVisualCalendar('${c.id}')">EDITAR CUADRANTE</button><button class="danger" onclick="clearCalendarSlots('${c.id}')">LIMPIAR CUADRANTE</button></div>`).join('');
+  if(!$('vcEditAction'))$('vcDelete').insertAdjacentHTML('beforebegin','<button id="vcEditAction" class="secondary hidden" onclick="editVisualCalendar(vcCurrent)">EDITAR CUADRANTE</button><button id="vcClearAction" class="danger hidden" onclick="clearCalendarSlots(vcCurrent)">LIMPIAR CUADRANTE</button>');
+  if(calendars.length)$('vcList').innerHTML=calendars.map(c=>`<button class="secondary ${String(c.id)===String(vcCurrent)?'on':''}" onclick="openVisualCalendar('${c.id}',false)">${esc(c.name)}</button>`).join('');
+  showCalendarActions(!!vcCurrent);
 };
 function editVisualCalendar(id){openVisualCalendar(id,true);document.querySelector('.calendar-builder').scrollIntoView({behavior:'smooth',block:'start'})}
 function clearCalendarSlots(id){const c=visualCalendars().find(x=>String(x.id)===String(id));if(!c)return;if(!confirm(`¿Limpiar el cuadrante ${c.name}?\n\nSe borrarán todos sus tramos lectivos y no lectivos, pero el cuadrante se conservará.`))return;action({action:'calendar-clear',id})}
+function showCalendarActions(show){['vcEditAction','vcClearAction','vcDelete'].forEach(id=>$(id)?.classList.toggle('hidden',!show))}
+const openVisualCalendarWithActions=openVisualCalendar;
+openVisualCalendar=function(id,fill=true){openVisualCalendarWithActions(id,fill);showCalendarActions(true)};
+const clearVisualCalendarWithActions=clearVisualCalendar;
+clearVisualCalendar=function(){clearVisualCalendarWithActions();showCalendarActions(false)};
 let editingTeacherId=0,editingInstrumentId=0;
 const renderWithStaffEditing=render;
 render=function(){
