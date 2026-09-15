@@ -228,6 +228,18 @@ renderVisualSetup=function(){
 };
 function editVisualCalendar(id){openVisualCalendar(id,true);document.querySelector('.calendar-builder').scrollIntoView({behavior:'smooth',block:'start'})}
 function clearCalendarSlots(id){const c=visualCalendars().find(x=>String(x.id)===String(id));if(!c)return;if(!confirm(`¿Limpiar el cuadrante ${c.name}?\n\nSe borrarán todos sus tramos lectivos y no lectivos, pero el cuadrante se conservará.`))return;action({action:'calendar-clear',id})}
+let editingTeacherId=0,editingInstrumentId=0;
+const renderWithStaffEditing=render;
+render=function(){
+  renderWithStaffEditing();
+  $('teacherList').innerHTML=table(['Profesor/a','Correo','Estado','Acciones'],data.teachers.map(t=>[esc(t.name),esc(t.email||''),`<span class="pill">${t.active?'Activo':'Inactivo'}</span>`,`<div class="actions"><button class="secondary" onclick="editTeacher(${t.id})">EDITAR</button><button class="${t.active?'secondary':'good'}" onclick="toggleTeacher(${t.id},${t.active?0:1})">${t.active?'DESACTIVAR':'ACTIVAR'}</button><button class="danger" onclick="deleteTeacher(${t.id},'${esc(t.name)}')">ELIMINAR</button></div>`]));
+  $('instrumentList').innerHTML=table(['Instrumento','Estado','Acciones'],data.instruments.map(i=>[esc(i.name),`<span class="pill">${i.active?'Activo':'Inactivo'}</span>`,`<div class="actions"><button class="secondary" onclick="editInstrument(${i.id})">EDITAR</button><button class="${i.active?'secondary':'good'}" onclick="toggleInstrument(${i.id},${i.active?0:1})">${i.active?'DESACTIVAR':'ACTIVAR'}</button><button class="danger" onclick="deleteInstrument(${i.id},'${esc(i.name)}')">ELIMINAR</button></div>`]));
+};
+function staffFormButton(inputId){return $(inputId).closest('div').querySelector(`button[onclick^="save"]`)}
+function editTeacher(id){const t=data.teachers.find(x=>+x.id===+id);if(!t)return;editingTeacherId=id;$('teacherName').value=t.name;$('teacherEmail').value=t.email||'';staffFormButton('teacherName').textContent='GUARDAR CAMBIOS';$('teacherName').scrollIntoView({behavior:'smooth',block:'center'});$('teacherName').focus()}
+function editInstrument(id){const i=data.instruments.find(x=>+x.id===+id);if(!i)return;editingInstrumentId=id;$('instrumentName').value=i.name;staffFormButton('instrumentName').textContent='GUARDAR CAMBIOS';$('instrumentName').scrollIntoView({behavior:'smooth',block:'center'});$('instrumentName').focus()}
+saveTeacher=function(){const name=$('teacherName').value.trim(),email=$('teacherEmail').value.trim();if(!name)return alert('Indica el nombre del profesor o profesora.');const current=data.teachers.find(x=>+x.id===+editingTeacherId);action({action:'teacher-save',id:editingTeacherId||'',name,email,active:current?!!current.active:true});editingTeacherId=0;$('teacherName').value='';$('teacherEmail').value='';staffFormButton('teacherName').textContent='AÑADIR PROFESOR/A'};
+saveInstrument=function(){const name=$('instrumentName').value.trim();if(!name)return alert('Indica el nombre del instrumento.');const current=data.instruments.find(x=>+x.id===+editingInstrumentId);action({action:'instrument-save',id:editingInstrumentId||'',name,active:current?!!current.active:true});editingInstrumentId=0;$('instrumentName').value='';staffFormButton('instrumentName').textContent='AÑADIR INSTRUMENTO'};
 if(token)load();
 </script>
 </body></html>
