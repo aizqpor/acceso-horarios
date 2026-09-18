@@ -99,11 +99,11 @@
     }
     function renderChosenSchedule(){
       const box=document.getElementById('chosenSchedule');if(!box)return;const chosen=selectedOptions();
-      if(!chosen.length){box.innerHTML='<h2>Tu horario</h2><p class="muted">Los tramos que selecciones aparecerán aquí colocados por día y hora.</p>';return}
+      if(!chosen.length){box.innerHTML='<h2>Tu horario seleccionado</h2><p class="muted">Los tramos que selecciones aparecerán aquí colocados por día y hora.</p>';return}
       const expanded=chosen.flatMap(option=>optionMeetings(option).flatMap(meeting=>meetingDays(meeting).map(day=>({...option,day,start:meeting.start,end:meeting.end}))));
       const days=WEEK_DAYS.filter(day=>expanded.some(option=>option.day===day)),intervals=[...new Map(expanded.map(option=>[`${option.start}|${option.end}`,{start:option.start,end:option.end}])).values()].sort((a,b)=>a.start.localeCompare(b.start)||a.end.localeCompare(b.end));
       const rows=intervals.map(interval=>`<tr><th class="time-cell">${esc(interval.start)}–${esc(interval.end)}</th>${days.map(day=>{const entries=expanded.filter(option=>option.start===interval.start&&option.end===interval.end&&option.day===day);return `<td>${entries.map(option=>`<div class="chosen-entry tone-${option.tone}"><strong>${esc(option.label)}</strong>${esc(option.group)}</div>`).join('')||'<span class="empty-cell">—</span>'}</td>`}).join('')}</tr>`).join('');
-      box.innerHTML=`<h2>Tu horario</h2><div class="schedule-legend"><span class="tone-instrument">Instrumento</span><span class="tone-language">Lenguaje Musical</span><span class="tone-ensemble">Agrupaciones</span><span class="tone-choir">Coro</span></div><div class="schedule-scroll"><table class="schedule-grid"><thead><tr><th>Hora</th>${days.map(day=>`<th>${day}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`;
+      box.innerHTML=`<h2>Tu horario seleccionado</h2><div class="schedule-legend"><span class="tone-instrument">Instrumento</span><span class="tone-language">Lenguaje Musical</span><span class="tone-ensemble">Agrupaciones</span><span class="tone-choir">Coro</span></div><div class="schedule-scroll"><table class="schedule-grid"><thead><tr><th>Hora</th>${days.map(day=>`<th>${day}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`;
     }
     function toggleCollectives(){const solo=document.getElementById('solo').checked;document.getElementById('collectives').classList.toggle('hidden',solo);if(solo)document.querySelectorAll('#collectives input[type=radio]').forEach(input=>input.checked=false);refreshSelectionVisuals();renderChosenSchedule()}
     function selected(name){const e=document.querySelector(`[name="${name}"]:checked`);return e?Number(e.value):null}
