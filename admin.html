@@ -150,7 +150,9 @@ function renderGroupLists(){
   }
   $('groupPrint').innerHTML=sections.join('')
 }
-function printGroupLists(){renderGroupLists();clearPrintModes();document.body.classList.add('print-groups');window.print();setTimeout(clearPrintModes,500)}
+function setPrintOrientation(orientation){document.getElementById('dynamicPrintPage')?.remove();const style=document.createElement('style');style.id='dynamicPrintPage';style.textContent=`@page{size:A4 ${orientation};margin:14mm}`;document.head.appendChild(style)}
+function clearPrintOrientation(){document.getElementById('dynamicPrintPage')?.remove()}
+function printGroupLists(){renderGroupLists();clearPrintModes();setPrintOrientation('portrait');document.body.classList.add('print-groups');window.print();setTimeout(()=>{clearPrintModes();clearPrintOrientation()},500)}
 async function downloadCsv(type){try{const r=await fetch(`${API}/api/admin/exportar?type=${type}&token=${encodeURIComponent(token)}`);if(!r.ok)throw Error('No se pudo generar el archivo.');const b=await r.blob(),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=type+'.csv';a.click();URL.revokeObjectURL(a.href)}catch(e){alert(e.message)}}
 let vcCurrent='',vcEditing='',vcSplit=new Set();
 function visualCalendars(){try{return JSON.parse(data.settings?.SCHEDULE_CALENDARS||'[]')}catch{return[]}}
