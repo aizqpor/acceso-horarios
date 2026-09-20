@@ -29,9 +29,9 @@
   body.print-teachers .teacher-sheet{display:block!important;width:100%!important;max-width:none!important;min-height:0;overflow:visible;break-inside:avoid-page;page-break-inside:avoid;break-after:page;page-break-after:always}
   body.print-teachers .teacher-sheet:last-child{break-after:auto;page-break-after:auto}
   body.print-teachers .teacher-sheet .schedule{display:table!important;width:100%!important;min-width:0!important;max-width:100%!important;table-layout:fixed!important}
-  body.print-teachers .teacher-sheet .schedule th,body.print-teachers .teacher-sheet .schedule td{height:40px;padding:3px}
-  body.print-teachers .teacher-sheet .schedule.rows-short th,body.print-teachers .teacher-sheet .schedule.rows-short td{height:48px}
-  body.print-teachers .teacher-sheet .schedule.rows-dense th,body.print-teachers .teacher-sheet .schedule.rows-dense td{height:32px;padding:2px}
+  body.print-teachers .teacher-sheet .schedule th,body.print-teachers .teacher-sheet .schedule td{height:50px;padding:4px}
+  body.print-teachers .teacher-sheet .schedule.rows-short th,body.print-teachers .teacher-sheet .schedule.rows-short td{height:58px;padding:5px}
+  body.print-teachers .teacher-sheet .schedule.rows-dense th,body.print-teachers .teacher-sheet .schedule.rows-dense td{height:40px;padding:3px}
 }
 </style>
 <body>
@@ -115,7 +115,8 @@ function studentEntries(s){return[
 function renderStudentSchedules(){const chosen=+$('resultStudent').value,pupils=data.students.filter(s=>s.status==='COMPLETED'&&(!chosen||s.id===chosen));if(!pupils.length){$('studentSchedules').innerHTML='<p class="muted">Todavía no hay horarios confirmados.</p>';return}const sheets=pupils.map(studentScheduleHtml).filter(Boolean),pages=[];for(let i=0;i<sheets.length;i+=4)pages.push(`<section class="student-page">${sheets.slice(i,i+4).join('')}</section>`);$('studentSchedules').innerHTML=pages.join('')}
 function studentScheduleHtml(s){const entries=studentEntries(s);if(!entries.length)return '';let start=Math.floor(Math.min(...entries.map(x=>mins(x.start)))/60)*60,end=Math.ceil(Math.max(...entries.map(x=>mins(x.end)))/60)*60,intervals=resultIntervals(entries,start,end),rows=[];for(let index=0;index<intervals.length;index++){const interval=intervals[index],cells=WEEK.map(day=>{const dayEntries=entries.filter(x=>dayMatches(x.days,day)),continuing=dayEntries.some(x=>mins(x.start)<interval.start&&mins(x.end)>interval.start);if(continuing)return '';const found=dayEntries.filter(x=>mins(x.start)===interval.start);if(!found.length)return '<td></td>';const finish=Math.max(...found.map(x=>mins(x.end))),spanIndex=intervals.slice(index).findIndex(next=>next.start>=finish),span=spanIndex<1?intervals.length-index:spanIndex;return `<td class="student-class"${span>1?` rowspan="${span}"`:''}>${found.map(x=>`${esc(x.subject)}${x.group?'<br>'+esc(x.group):''}`).join('<hr>')}</td>`}).join('');rows.push(`<tr><td>${clock(interval.start)}<br>${clock(interval.end)}</td>${cells}</tr>`)}return `<article class="student-sheet"><h3>${esc(s.name)}</h3><div class="student-meta">${s.course}.º · ${esc(s.instrument)}</div><table class="student-grid"><thead><tr><th>Hora</th><th>L</th><th>M</th><th>X</th><th>J</th><th>V</th></tr></thead><tbody>${rows.join('')}</tbody></table></article>`}
 function clearPrintModes(){document.body.classList.remove('print-teachers','print-students','print-groups')}
-function printTeachers(){renderResultCalendar();clearPrintModes();document.body.classList.add('print-teachers');window.print();setTimeout(clearPrintModes,500)}
+function prepareTeacherPrintLayout(){document.querySelectorAll('#resultCalendar .teacher-sheet .schedule').forEach(table=>{table.classList.remove('rows-short','rows-dense');const count=table.tBodies[0]?.rows.length||0;if(count<=8)table.classList.add('rows-short');else if(count>=11)table.classList.add('rows-dense')})}
+function printTeachers(){renderResultCalendar();prepareTeacherPrintLayout();clearPrintModes();document.body.classList.add('print-teachers');window.print();setTimeout(clearPrintModes,500)}
 function printStudents(){renderStudentSchedules();clearPrintModes();document.body.classList.add('print-students');window.print();setTimeout(clearPrintModes,500)}
 function groupChoiceField(subject){return({LANGUAGE:'language_option_id',ENSEMBLE:'ensemble_option_id',CHOIR:'choir_option_id'})[subject]}
 function groupPrintName(subject){return({LANGUAGE:'Lenguaje Musical',ENSEMBLE:'Agrupaciones Musicales',CHOIR:'Coro'})[subject]||subject}
