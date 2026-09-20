@@ -121,7 +121,21 @@ function printStudents(){renderStudentSchedules();clearPrintModes();document.bod
 function groupChoiceField(subject){return({LANGUAGE:'language_option_id',ENSEMBLE:'ensemble_option_id',CHOIR:'choir_option_id'})[subject]}
 function groupPrintName(subject){return({LANGUAGE:'Lenguaje Musical',ENSEMBLE:'Agrupaciones Musicales',CHOIR:'Coro'})[subject]||subject}
 function selectedLanguageIds(student){let ids=[];try{ids=JSON.parse(student.language_option_ids||'[]')}catch{}return new Set([student.language_option_id,...(Array.isArray(ids)?ids:[])].filter(Boolean).map(Number))}
-function languageListGroups(options){const groups=new Map();for(const option of options){const key=`${option.course||option.courses||''}|${String(option.group_name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'')}`;if(!groups.has(key))groups.set(key,{...option,optionIds:[],meetings:[]});const group=groups.get(key);group.optionIds.push(+option.id);group.meetings.push({days:option.days,start:option.start_time,end:option.end_time})}return [...groups.values()]}
+function languageListGroups(options){
+  const groups=new Map();
+  for(const option of options){
+    const course=option.course||option.courses||'',name=String(option.group_name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,''),key=`${course}|${name}|${option.start_time}|${option.end_time}`;
+    if(!groups.has(key))groups.set(key,{...option,optionIds:[],meetings:[]});
+    const group=groups.get(key);group.optionIds.push(+option.id);group.meetings.push({days:option.days,start:option.start_time,end:option.end_time})
+  }
+  const result=[...groups.values()],byCourse=new Map();
+  for(const group of result){const course=String(group.course||group.courses||'');if(!byCourse.has(course))byCourse.set(course,[]);byCourse.get(course).push(group)}
+  for(const [course,courseGroups] of byCourse){
+    courseGroups.sort((a,b)=>String(a.start_time).localeCompare(String(b.start_time)));
+    if(courseGroups.length>1)courseGroups.forEach((group,index)=>{if(!/(?:^|\s)[AB]$/i.test(String(group.group_name||'').trim()))group.group_name=`${course}.º ${String.fromCharCode(65+index)}`})
+  }
+  return result
+}
 function renderGroupLists(){
   const selected=$('groupPrintSubject').value,subjects=selected==='ALL'?['LANGUAGE','ENSEMBLE','CHOIR']:[selected],collator=new Intl.Collator('es',{sensitivity:'base'}),sections=[];
   for(const subject of subjects){
@@ -129,7 +143,7 @@ function renderGroupLists(){
     for(const option of options){
       const optionIds=new Set(option.optionIds),pupils=data.students.filter(s=>s.status==='COMPLETED'&&(subject==='LANGUAGE'?[...selectedLanguageIds(s)].some(id=>optionIds.has(id)):optionIds.has(+s[field]))).sort((a,b)=>collator.compare(a.instrument,b.instrument)||collator.compare(a.name,b.name));
       let previous='';const rows=pupils.map(s=>{const instrument=s.instrument===previous?'':s.instrument;previous=s.instrument;return `<tr><td>${esc(instrument)}</td><td>${esc(s.name)}</td><td>${s.course}.º</td></tr>`}).join('');
-      const meetings=[...new Map(option.meetings.map(m=>[`${m.days}|${m.start}|${m.end}`,m])).values()],days=[...new Set(meetings.flatMap(m=>WEEK.filter(day=>dayMatches(m.days,day))))],times=[...new Set(meetings.map(m=>`${m.start}–${m.end}`))],schedule=`${days.join(' y ')} · ${times.join(' / ')} h`;
+      const meetings=[...new Map(option.meetings.map(m=>[`${m.days}|${m.start}|${m.end}`,m])).values()],days=WEEK.filter(day=>meetings.some(m=>dayMatches(m.days,day))),times=[...new Set(meetings.map(m=>`${m.start}–${m.end}`))],schedule=`${days.join(' y ')} · ${times.join(' / ')} h`;
       blocks.push(`<section class="group-block"><h2>${esc(option.group_name)} · ${pupils.length} alumno${pupils.length===1?'':'s'}</h2><p>${esc(schedule)}</p><table class="group-table"><thead><tr><th>Instrumento</th><th>Alumno/a</th><th>Curso</th></tr></thead><tbody>${rows||'<tr><td></td><td>Sin alumnado asignado</td><td></td></tr>'}</tbody></table></section>`)
     }
     sections.push(`<article class="group-subject"><h1>${esc(groupPrintName(subject))}</h1>${blocks.join('')||'<p>No hay grupos configurados.</p>'}</article>`)
