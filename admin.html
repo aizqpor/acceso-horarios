@@ -57,7 +57,7 @@
 </main>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
-const API='https://horarios.cemluisdenarvaez.es';let token=sessionStorage.getItem('adminToken')||'',data={};
+const API='https://registro-horarios.aizqpor.workers.dev';let token=sessionStorage.getItem('adminToken')||'',data={};
 const $=id=>document.getElementById(id), esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const WEEK=['Lunes','Martes','Miércoles','Jueves','Viernes'];
 $('rosterFile').accept='.xlsx,.xls,.csv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain';
