@@ -29,7 +29,7 @@
   <div id="overlapDialog" class="dialog-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="overlapTitle"><div class="dialog-box"><h2 id="overlapTitle">Ese horario coincide con otro</h2><p>El horario que acaba de elegir coincide con otro tramo ya seleccionado. Elija otro tramo horario.</p><button type="button" class="primary" onclick="closeOverlapDialog()">Aceptar</button></div></div>
   <footer></footer>
   <script>
-    const API='https://horarios.cemluisdenarvaez.es';
+    const API='https://registro-horarios.aizqpor.workers.dev';
     const token=new URLSearchParams(location.search).get('token')||'';
     let config=null,election=null,timer=null,registrationChildNumber=0,registrationCourses='',registrationInstruments='';
     document.addEventListener('DOMContentLoaded',()=>token?loadElection():loadRegistration());
